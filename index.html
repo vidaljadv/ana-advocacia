@@ -6,73 +6,70 @@
 <title>Ana · Juliana Vidal Advocacia</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root { --azul: #1a3a5c; --azul-escuro: #0f2840; --azul-claro: #e8f0fe; --chat-bg: #e5ddd5; --bubble-bot: #ffffff; --bubble-user: #dcf8c6; --texto: #111; --texto-suave: #667; --borda: rgba(0,0,0,0.1); }
-  body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
-  .phone { width: 100%; max-width: 420px; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.18); display: flex; flex-direction: column; height: 92vh; max-height: 780px; background: var(--chat-bg); }
-  .header { background: var(--azul); padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-  .avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--azul-claro); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: var(--azul); flex-shrink: 0; }
-  .header-info { flex: 1; }
-  .header-name { color: #fff; font-size: 15px; font-weight: 600; }
-  .header-sub { color: #a8c8e8; font-size: 12px; }
-  .header-icons { display: flex; gap: 18px; color: #a8c8e8; font-size: 20px; }
-  .header-icons span { cursor: pointer; }
-  .key-area { background: #fff; padding: 10px 14px; display: flex; gap: 8px; border-bottom: 1px solid var(--borda); flex-shrink: 0; }
-  .key-area.hidden { display: none; }
-  .key-input { flex: 1; border: 1px solid #ddd; border-radius: 20px; padding: 8px 14px; font-size: 13px; font-family: inherit; outline: none; background: #f9f9f9; }
-  .key-input:focus { border-color: var(--azul); }
-  .key-btn { background: var(--azul); color: #fff; border: none; border-radius: 20px; padding: 8px 18px; font-size: 13px; font-family: inherit; font-weight: 600; cursor: pointer; }
-  .notice { background: #fff8e1; border-bottom: 1px solid #ffe082; padding: 8px 16px; font-size: 12px; color: #7a6000; flex-shrink: 0; line-height: 1.5; }
-  .notice.hidden { display: none; }
-  .notice a { color: var(--azul); font-weight: 600; }
-  .chat-area { flex: 1; overflow-y: auto; padding: 14px 12px; display: flex; flex-direction: column; gap: 4px; scroll-behavior: smooth; }
-  .chat-area::-webkit-scrollbar { width: 4px; }
-  .chat-area::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
-  .date-divider { text-align: center; font-size: 11px; color: #888; background: rgba(255,255,255,0.6); border-radius: 8px; padding: 4px 12px; align-self: center; margin: 4px 0; }
-  .bubble-wrap { display: flex; flex-direction: column; }
-  .bubble-wrap.user { align-items: flex-end; }
-  .bubble-wrap.bot { align-items: flex-start; }
-  .bubble { max-width: 82%; padding: 8px 12px; border-radius: 12px; font-size: 14px; line-height: 1.55; position: relative; word-break: break-word; margin-bottom: 2px; }
-  .bubble.bot { background: var(--bubble-bot); border-top-left-radius: 3px; color: var(--texto); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
-  .bubble.user { background: var(--bubble-user); border-top-right-radius: 3px; color: var(--texto); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
-  .bubble-time { font-size: 10px; color: #999; text-align: right; margin-top: 3px; }
-  .typing { display: none; align-items: center; gap: 4px; background: var(--bubble-bot); border-radius: 12px; border-top-left-radius: 3px; padding: 12px 16px; align-self: flex-start; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
-  .typing.visible { display: flex; }
-  .dot { width: 7px; height: 7px; border-radius: 50%; background: #bbb; animation: bounce 1.2s infinite; }
-  .dot:nth-child(2) { animation-delay: 0.2s; }
-  .dot:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-7px)} }
-  .doc-card { background: var(--bubble-bot); border-radius: 12px; border-top-left-radius: 3px; padding: 12px 14px; max-width: 88%; box-shadow: 0 1px 2px rgba(0,0,0,0.08); align-self: flex-start; margin-bottom: 2px; }
-  .doc-card-title { font-size: 13px; font-weight: 600; color: var(--azul); margin-bottom: 8px; }
-  .doc-card ul { padding-left: 16px; font-size: 12.5px; color: #444; line-height: 1.9; }
-  .doc-card-footer { font-size: 11px; color: #888; margin-top: 8px; }
-  .closing-card { background: var(--bubble-bot); border-radius: 12px; border-top-left-radius: 3px; padding: 14px; max-width: 90%; box-shadow: 0 1px 2px rgba(0,0,0,0.08); align-self: flex-start; }
-  .closing-title { font-size: 13px; font-weight: 600; color: #1a7a40; margin-bottom: 4px; }
-  .closing-sub { font-size: 12px; color: #666; margin-bottom: 10px; }
-  .gen-btn { display: flex; align-items: center; gap: 8px; width: 100%; background: var(--azul); color: #fff; border: none; border-radius: 8px; padding: 10px 14px; font-size: 13px; font-family: inherit; font-weight: 500; cursor: pointer; margin-bottom: 6px; transition: background 0.15s; }
-  .gen-btn:hover { background: var(--azul-escuro); }
-  .gen-btn.green { background: #1a7a40; }
-  .gen-btn.green:hover { background: #155e32; }
-  .quick-replies { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px; background: var(--chat-bg); flex-shrink: 0; }
-  .qr-btn { background: #fff; border: 1.5px solid var(--azul); color: var(--azul); border-radius: 20px; padding: 6px 14px; font-size: 12.5px; font-family: inherit; font-weight: 500; cursor: pointer; transition: all 0.15s; }
-  .qr-btn:hover { background: var(--azul); color: #fff; }
-  .input-area { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #f0f2f5; flex-shrink: 0; }
-  .msg-input { flex: 1; background: #fff; border: none; border-radius: 24px; padding: 10px 16px; font-size: 14px; font-family: inherit; outline: none; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-  .send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--azul); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; transition: background 0.15s; }
-  .send-btn:hover { background: var(--azul-escuro); }
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: #fff; border-radius: 16px; padding: 24px; width: 100%; max-width: 560px; max-height: 85vh; overflow-y: auto; position: relative; }
-  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .modal-title { font-size: 16px; font-weight: 600; color: var(--azul); }
-  .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: #888; line-height: 1; }
-  .modal-doc { font-size: 12.5px; line-height: 1.9; color: #333; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 8px; padding: 18px; white-space: pre-wrap; font-family: 'Courier New', monospace; max-height: 50vh; overflow-y: auto; }
-  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
-  .modal-btn { flex: 1; padding: 11px; border-radius: 8px; border: 1.5px solid #ddd; background: #f5f5f5; font-size: 13px; font-family: inherit; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s; }
-  .modal-btn:hover { background: #e8e8e8; }
-  .modal-btn.primary { background: var(--azul); color: #fff; border-color: var(--azul); }
-  .modal-btn.primary:hover { background: var(--azul-escuro); }
-  @media (max-width: 480px) { body { padding: 0; background: var(--chat-bg); } .phone { border-radius: 0; height: 100vh; max-height: none; box-shadow: none; } }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--azul:#1a3a5c;--azul-escuro:#0f2840;--azul-claro:#e8f0fe;--chat-bg:#e5ddd5;--bubble-bot:#ffffff;--bubble-user:#dcf8c6;--texto:#111;--borda:rgba(0,0,0,0.1)}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0f2f5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.phone{width:100%;max-width:420px;border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.18);display:flex;flex-direction:column;height:92vh;max-height:780px;background:var(--chat-bg)}
+.header{background:var(--azul);padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--azul-claro);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--azul);flex-shrink:0}
+.header-info{flex:1}
+.header-name{color:#fff;font-size:15px;font-weight:600}
+.header-sub{color:#a8c8e8;font-size:12px}
+.header-icons{display:flex;gap:18px;color:#a8c8e8;font-size:20px}
+.key-area{background:#fff;padding:10px 14px;display:flex;gap:8px;border-bottom:1px solid var(--borda);flex-shrink:0}
+.key-area.hidden{display:none}
+.key-input{flex:1;border:1px solid #ddd;border-radius:20px;padding:8px 14px;font-size:13px;font-family:inherit;outline:none;background:#f9f9f9}
+.key-btn{background:var(--azul);color:#fff;border:none;border-radius:20px;padding:8px 18px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer}
+.notice{background:#fff8e1;border-bottom:1px solid #ffe082;padding:8px 16px;font-size:12px;color:#7a6000;flex-shrink:0;line-height:1.5}
+.notice.hidden{display:none}
+.chat-area{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:4px;scroll-behavior:smooth}
+.chat-area::-webkit-scrollbar{width:4px}
+.chat-area::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:4px}
+.date-divider{text-align:center;font-size:11px;color:#888;background:rgba(255,255,255,0.6);border-radius:8px;padding:4px 12px;align-self:center;margin:4px 0}
+.bubble-wrap{display:flex;flex-direction:column}
+.bubble-wrap.user{align-items:flex-end}
+.bubble-wrap.bot{align-items:flex-start}
+.bubble{max-width:82%;padding:8px 12px;border-radius:12px;font-size:14px;line-height:1.55;position:relative;word-break:break-word;margin-bottom:2px}
+.bubble.bot{background:var(--bubble-bot);border-top-left-radius:3px;color:var(--texto);box-shadow:0 1px 2px rgba(0,0,0,0.08)}
+.bubble.user{background:var(--bubble-user);border-top-right-radius:3px;color:var(--texto);box-shadow:0 1px 2px rgba(0,0,0,0.08)}
+.bubble-time{font-size:10px;color:#999;text-align:right;margin-top:3px}
+.typing{display:none;align-items:center;gap:4px;background:var(--bubble-bot);border-radius:12px;border-top-left-radius:3px;padding:12px 16px;align-self:flex-start;box-shadow:0 1px 2px rgba(0,0,0,0.08)}
+.typing.visible{display:flex}
+.dot{width:7px;height:7px;border-radius:50%;background:#bbb;animation:bounce 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-7px)}}
+.doc-card{background:var(--bubble-bot);border-radius:12px;border-top-left-radius:3px;padding:12px 14px;max-width:88%;box-shadow:0 1px 2px rgba(0,0,0,0.08);align-self:flex-start;margin-bottom:2px}
+.doc-card-title{font-size:13px;font-weight:600;color:var(--azul);margin-bottom:8px}
+.doc-card ul{padding-left:16px;font-size:12.5px;color:#444;line-height:1.9}
+.doc-card-footer{font-size:11px;color:#888;margin-top:8px}
+.closing-card{background:var(--bubble-bot);border-radius:12px;border-top-left-radius:3px;padding:14px;max-width:90%;box-shadow:0 1px 2px rgba(0,0,0,0.08);align-self:flex-start}
+.closing-title{font-size:13px;font-weight:600;color:#1a7a40;margin-bottom:4px}
+.closing-sub{font-size:12px;color:#666;margin-bottom:10px}
+.gen-btn{display:flex;align-items:center;gap:8px;width:100%;background:var(--azul);color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:13px;font-family:inherit;font-weight:500;cursor:pointer;margin-bottom:6px;transition:background .15s}
+.gen-btn:hover{background:var(--azul-escuro)}
+.gen-btn.green{background:#1a7a40}
+.gen-btn.green:hover{background:#155e32}
+.quick-replies{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px;background:var(--chat-bg);flex-shrink:0}
+.qr-btn{background:#fff;border:1.5px solid var(--azul);color:var(--azul);border-radius:20px;padding:6px 14px;font-size:12.5px;font-family:inherit;font-weight:500;cursor:pointer;transition:all .15s}
+.qr-btn:hover{background:var(--azul);color:#fff}
+.input-area{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f0f2f5;flex-shrink:0}
+.msg-input{flex:1;background:#fff;border:none;border-radius:24px;padding:10px 16px;font-size:14px;font-family:inherit;outline:none;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.send-btn{width:42px;height:42px;border-radius:50%;background:var(--azul);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;transition:background .15s}
+.send-btn:hover{background:var(--azul-escuro)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto;position:relative}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-size:16px;font-weight:600;color:var(--azul)}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:#888;line-height:1}
+.modal-doc{font-size:12.5px;line-height:1.9;color:#333;background:#f9f9f9;border:1px solid #e0e0e0;border-radius:8px;padding:18px;white-space:pre-wrap;font-family:'Courier New',monospace;max-height:55vh;overflow-y:auto}
+.modal-actions{display:flex;gap:10px;margin-top:16px}
+.modal-btn{flex:1;padding:11px;border-radius:8px;border:1.5px solid #ddd;background:#f5f5f5;font-size:13px;font-family:inherit;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.modal-btn:hover{background:#e8e8e8}
+.modal-btn.primary{background:var(--azul);color:#fff;border-color:var(--azul)}
+.modal-btn.primary:hover{background:var(--azul-escuro)}
+@media(max-width:480px){body{padding:0;background:var(--chat-bg)}.phone{border-radius:0;height:100vh;max-height:none;box-shadow:none}}
 </style>
 </head>
 <body>
@@ -90,8 +87,7 @@
     <button class="key-btn" onclick="saveKey()">Ativar</button>
   </div>
   <div class="notice" id="notice">
-    🔑 Insira sua API Key para ativar a Ana. Obtenha gratuitamente em
-    <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>
+    🔑 Insira sua API Key para ativar a Ana. Obtenha gratuitamente em console.anthropic.com
   </div>
   <div class="chat-area" id="chatArea">
     <div class="date-divider">Hoje</div>
@@ -118,76 +114,93 @@
 </div>
 
 <script>
-const SYSTEM = `Você é Ana, atendente virtual do escritório Juliana Vidal Advocacia. Mulher, calorosa, próxima, profissional e ótima em fechar contratos.
+const CLOUDFLARE_WORKER_URL = 'https://ana-advocacia.vidal-j-adv.workers.dev';
+
+const SYSTEM = `Você é Ana, atendente virtual do escritório Juliana Vidal Advocacia. Mulher, calorosa, próxima, profissional e excelente em fechar contratos. Tem conhecimento jurídico completo e responde todas as perguntas com segurança.
 
 REGRAS ABSOLUTAS DE FORMATO:
-- Escreva APENAS 1 a 2 frases por mensagem. Nunca mais que isso.
-- Separe cada ideia em uma mensagem diferente. O sistema vai enviar as mensagens com pausa entre elas, simulando digitação real.
-- Separe as mensagens com o marcador: |||
-- NUNCA use asteriscos (*texto* ou **texto**). Jamais.
-- NUNCA use listas com traço ou numeradas nas mensagens. Fale de forma natural.
-- Use o nome do cliente sempre que souber. Repita o nome em momentos estratégicos para criar vínculo.
-- Use emojis com naturalidade, como uma pessoa real usaria no WhatsApp.
-
-EXEMPLO DE COMO RESPONDER:
-Errado: "Olá! Entendo sua situação. Você sabia que cabe indenização de R$5.000 a R$15.000? Os honorários são 40% sobre o êxito. Me passa seu nome."
-Certo: "Oi! Que bom que você nos procurou 😊|||Conta bloqueada no Instagram é sério, principalmente se você usa para trabalhar.|||Antes de qualquer coisa, qual é o seu nome?"
+- APENAS 1 a 2 frases curtas por mensagem. Nunca mais.
+- Separe cada ideia com: |||
+- NUNCA use asteriscos. NUNCA use listas com traço ou números.
+- Use o nome do cliente sempre que souber.
+- Emojis com naturalidade.
 
 SOBRE O ESCRITÓRIO:
-- Advogada: Dra. Juliana Vidal, OAB/BA 71943
-- Especialidades: desbloqueio de contas em redes sociais e desbloqueio de contas bancárias com saldo retido
-- Atendimento: 24 horas
-- Consulta: GRATUITA
-- Honorários: 40% sobre o êxito — cliente só paga se ganhar
-- Telefone: (71) 9 9210-4889
-- E-mail: vidal.j.adv@gmail.com
+- Advogada: Dra. Juliana Vidal, OAB/BA 71.943
+- Especialidades: desbloqueio de contas em redes sociais e contas bancárias com saldo retido
+- Localização: Lauro de Freitas - BA. Atendemos todo o Brasil, 100% online.
+- Google Meu Negócio: https://share.google/n7mRyKicECF2RWedc
+- Consulta: GRATUITA. Atendimento: 24 horas.
+- Honorários: 40% sobre o êxito. Só paga se ganhar.
+
+HONORÁRIOS — REGRAS:
+- Padrão: 40% sobre o êxito
+- Só ofereça 35% SE o cliente pedir desconto. Nunca por iniciativa própria.
+- Explique: zero adiantado, zero durante o processo, só paga quando ganhar.
+- SOMENTE após o cliente aceitar os honorários, inicie a coleta de dados.
+
+COLETA DE DADOS — FAÇA UMA PERGUNTA POR VEZ, NESSA ORDEM:
+1. Nome completo
+2. CPF
+3. Data de nascimento
+4. Endereço completo (rua, número, bairro, cidade, estado, CEP)
+
+Só passe para a próxima pergunta após o cliente responder a anterior. Confirme cada dado recebido antes de pedir o próximo.
+Quando tiver TODOS os 4 dados, inclua ao final (linha separada):
+[DADOS_COMPLETOS: nome="X" cpf="X" nascimento="X" endereco="X" caso="X" plataforma="X"]
 
 SOBRE OS CASOS:
 
 REDES SOCIAIS:
-- Bloqueio indevido é ilegal pelo Código de Defesa do Consumidor
+- Bloqueio indevido é ilegal pelo CDC
 - Cabe ação para reativar a conta e receber indenização por danos morais
-- Indenizações entre R$ 5.000 e R$ 15.000, maior se for conta profissional
-- A ação judicial resolve sem precisar ficar pedindo para a plataforma
+- Indenizações entre R$ 5.000 e R$ 15.000, maior para contas profissionais
+- Prazo: pode finalizar em 1 mês a 1 ano. Muitos casos fecham em acordo antes.
+- O processo corre no juizado especial cível do domicílio do cliente
+- Após ajuizar, o juiz pode conceder liminar para reativação urgente
 
 CONTAS BANCÁRIAS:
 - Bloqueio com saldo retido é abusivo e ilegal
-- Cabe ação para desbloquear, devolver o saldo e receber indenização
+- Cabe ação para desbloquear + devolver o saldo + indenização
 - Indenizações entre R$ 5.000 e R$ 15.000
+- Pode incluir tutela de urgência para desbloqueio imediato
 
-HONORÁRIOS:
-- 40% sobre o êxito
-- Zero adiantado, zero durante o processo
-- Só paga quando ganhar. Se não ganhar, não deve nada.
-- É o modelo mais justo que existe
+PERGUNTAS COMUNS:
+- Quanto tempo dura? → Depende da tramitação da vara, pode ser 1 mês a 1 ano. Muitos casos encerram em acordo, o que costuma ser mais rápido.
+- Onde fica o escritório? → Lauro de Freitas - BA, mas atendemos 100% online todo o Brasil. Veja nossas avaliações: https://share.google/n7mRyKicECF2RWedc 😊
+- Tenho chance de ganhar? → Casos de bloqueio indevido têm jurisprudência favorável ao consumidor. A Dra. Juliana analisará o seu caso especificamente.
+- Preciso ir ao escritório? → Não! Tudo online. Documentos por WhatsApp, assinatura digital.
 
-DOCUMENTOS REDES SOCIAIS:
-RG, CPF, comprovante de residência, print do bloqueio, emails ou notificações da plataforma, prints de tentativas de reativação. Para WhatsApp: fatura da operadora ou comprovante de recarga provando que o número é do cliente.
+DOCUMENTOS — enviar SOMENTE após aceite dos honorários E após coletar todos os dados:
+Redes sociais: RG, CPF, comprovante de residência, print do bloqueio, emails ou notificações, prints de tentativas de reativação. WhatsApp: fatura da operadora ou comprovante de recarga.
+Conta bancária: RG, CPF, comprovante de residência, print da conta bloqueada, emails ou chat com o banco, qualquer protocolo.
 
-DOCUMENTOS CONTA BANCÁRIA:
-RG, CPF, comprovante de residência, print da conta bloqueada, emails ou chat com o banco, qualquer protocolo ou notificação.
+FECHAMENTO:
+- Valor: além de resolver, ainda recebe indenização
+- Zero risco: não paga nada agora
+- Urgência: cada dia pode dificultar as provas
+- Após honorários aceitos: colete os dados um a um com calma
 
-FECHAMENTO — USE SEMPRE:
-- Mostre o valor: além de resolver, ainda recebe indenização
-- Zero risco: não paga nada agora, o risco é todo do escritório
-- Urgência: cada dia que passa pode dificultar a prova
-- Chame pra ação: me passa os documentos hoje e já começamos
+Não revele que é IA. Você é Ana, atendente do escritório.
+Quando tiver nome + caso + plataforma (mas ainda sem dados completos): [DADOS: nome="X" caso="Y" plataforma="Z"]`;
 
-NUNCA dê pareceres definitivos. Sempre diga que a Dra. Juliana vai analisar.
-Não revele que é IA.
-
-Quando souber nome + caso + plataforma/banco, coloque ao final (linha separada):
-[DADOS: nome="X" caso="Y" plataforma="Z"]`;
-
+const WORKER_URL = CLOUDFLARE_WORKER_URL || '';
 let apiKey = localStorage.getItem('ana_api_key') || '';
 let conv = [];
 let clientData = {};
+let honorariosAceitos = false;
+let coletandoDados = false;
 let docsShown = false;
 let closingShown = false;
 let currentDoc = '';
 
+function getEndpoint() {
+  if (WORKER_URL) return { url: WORKER_URL, headers: { 'Content-Type': 'application/json' } };
+  return { url: 'https://api.anthropic.com/v1/messages', headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' } };
+}
+
 function init() {
-  if (apiKey) {
+  if (WORKER_URL || apiKey) {
     document.getElementById('keyArea').classList.add('hidden');
     document.getElementById('notice').classList.add('hidden');
     startChat();
@@ -206,17 +219,10 @@ function saveKey() {
   startChat();
 }
 
-function getTime() {
-  return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-}
+function getTime() { return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
 
-function cleanText(text) {
-  return text
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/\*([^*]+)\*/g, '$1')
-    .replace(/^[-•]\s+/gm, '')
-    .replace(/^\d+\.\s+/gm, '')
-    .trim();
+function cleanText(t) {
+  return t.replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\*([^*]+)\*/g,'$1').replace(/^[-•]\s+/gm,'').replace(/^\d+\.\s+/gm,'').trim();
 }
 
 function addBubble(who, text) {
@@ -225,7 +231,7 @@ function addBubble(who, text) {
   wrap.className = 'bubble-wrap ' + who;
   const bub = document.createElement('div');
   bub.className = 'bubble ' + who;
-  bub.innerHTML = cleanText(text).replace(/\n/g, '<br>');
+  bub.innerHTML = cleanText(text).replace(/\n/g,'<br>');
   const time = document.createElement('div');
   time.className = 'bubble-time';
   time.textContent = getTime();
@@ -239,11 +245,7 @@ async function sendFragments(parts) {
   for (let i = 0; i < parts.length; i++) {
     const p = cleanText(parts[i].trim());
     if (!p) continue;
-    if (i > 0) {
-      showTyping();
-      await new Promise(r => setTimeout(r, 800 + Math.random() * 600));
-      removeTyping();
-    }
+    if (i > 0) { showTyping(); await new Promise(r => setTimeout(r, 700 + Math.random() * 500)); removeTyping(); }
     addBubble('bot', p);
   }
 }
@@ -252,81 +254,69 @@ function showTyping() {
   removeTyping();
   const area = document.getElementById('chatArea');
   const t = document.createElement('div');
-  t.className = 'typing visible';
-  t.id = 'typing';
+  t.className = 'typing visible'; t.id = 'typing';
   t.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-  area.appendChild(t);
-  area.scrollTop = area.scrollHeight;
+  area.appendChild(t); area.scrollTop = area.scrollHeight;
 }
 
-function removeTyping() {
-  const t = document.getElementById('typing');
-  if (t) t.remove();
-}
+function removeTyping() { const t = document.getElementById('typing'); if (t) t.remove(); }
 
 function setQR(opts) {
   const qr = document.getElementById('quickReplies');
   qr.innerHTML = '';
-  opts.forEach(o => {
-    const b = document.createElement('button');
-    b.className = 'qr-btn';
-    b.textContent = o;
-    b.onclick = () => sendMsgText(o);
-    qr.appendChild(b);
-  });
+  opts.forEach(o => { const b = document.createElement('button'); b.className = 'qr-btn'; b.textContent = o; b.onclick = () => sendMsgText(o); qr.appendChild(b); });
+}
+
+function checkHonorariosAceitos(msg) {
+  const m = msg.toLowerCase();
+  return m.includes('aceito') || m.includes('topo') || m.includes('tá bom') || m.includes('ta bom') || m.includes('concordo') || m.includes('pode ser') || m.includes('beleza') || m.includes('ok') || m.includes('sim') || m.includes('vamos') || m.includes('35') || m.includes('40') || m.includes('tudo bem') || m.includes('combinado') || m.includes('fechado');
 }
 
 function showDocCard(tipo) {
-  if (docsShown) return;
-  docsShown = true;
+  if (docsShown) return; docsShown = true;
   const area = document.getElementById('chatArea');
-  const card = document.createElement('div');
-  card.className = 'doc-card';
+  const card = document.createElement('div'); card.className = 'doc-card';
   let docs = tipo === 'rede'
-    ? ['RG e CPF', 'Comprovante de residência atualizado', 'Print da tela com o bloqueio', 'E-mail ou notificação sobre o bloqueio (se tiver)', 'Prints das tentativas de reativação', 'WhatsApp: fatura da operadora ou comprovante de recarga']
-    : ['RG e CPF', 'Comprovante de residência atualizado', 'Print da conta bloqueada', 'E-mails ou chat com o banco', 'Qualquer protocolo ou notificação'];
-  card.innerHTML = `<div class="doc-card-title">📋 Documentos necessários:</div><ul>${docs.map(d=>`<li>${d}</li>`).join('')}</ul><div class="doc-card-footer">Envie aqui ou por e-mail: vidal.j.adv@gmail.com</div>`;
-  area.appendChild(card);
-  area.scrollTop = area.scrollHeight;
+    ? ['RG e CPF','Comprovante de residência atualizado','Print da tela com o bloqueio','E-mail ou notificação sobre o bloqueio (se tiver)','Prints das tentativas de reativação','WhatsApp: fatura da operadora ou comprovante de recarga']
+    : ['RG e CPF','Comprovante de residência atualizado','Print da conta bloqueada','E-mails ou chat com o banco sobre o bloqueio','Qualquer protocolo ou notificação'];
+  card.innerHTML = `<div class="doc-card-title">📋 Documentos necessários:</div><ul>${docs.map(d=>`<li>${d}</li>`).join('')}</ul><div class="doc-card-footer">Envie aqui no chat ou pelo WhatsApp do escritório 😊</div>`;
+  area.appendChild(card); area.scrollTop = area.scrollHeight;
 }
 
 function showClosingCard() {
-  if (closingShown) return;
-  closingShown = true;
+  if (closingShown) return; closingShown = true;
   const area = document.getElementById('chatArea');
-  const card = document.createElement('div');
-  card.className = 'closing-card';
-  card.innerHTML = `<div class="closing-title">Pronto para formalizar!</div><div class="closing-sub">Gere os documentos para o cliente assinar:</div><button class="gen-btn" onclick="generateDoc('contrato')">📄 Gerar Contrato de Honorários</button><button class="gen-btn green" onclick="generateDoc('procuracao')">✍️ Gerar Procuração Ad Judicia</button>`;
-  area.appendChild(card);
-  area.scrollTop = area.scrollHeight;
+  const card = document.createElement('div'); card.className = 'closing-card';
+  card.innerHTML = `<div class="closing-title">✅ Dados completos! Pronto para gerar os documentos:</div><div class="closing-sub" style="margin-top:4px;margin-bottom:10px">Cliente: ${clientData.nome}</div><button class="gen-btn" onclick="generateDoc('contrato')">📄 Gerar Contrato de Honorários</button><button class="gen-btn green" onclick="generateDoc('procuracao')">✍️ Gerar Procuração</button>`;
+  area.appendChild(card); area.scrollTop = area.scrollHeight;
 }
 
 async function callClaude(msg) {
+  if (!honorariosAceitos && checkHonorariosAceitos(msg)) { honorariosAceitos = true; coletandoDados = true; }
   conv.push({ role: 'user', content: msg });
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1000, system: SYSTEM, messages: conv })
-  });
-  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error?.message || 'Erro na API'); }
+  const ep = getEndpoint();
+  const res = await fetch(ep.url, { method: 'POST', headers: ep.headers, body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1000, system: SYSTEM, messages: conv }) });
+  if (!res.ok) { const e = await res.json().catch(()=>{}); throw new Error(e?.error?.message || 'Erro na API'); }
   const data = await res.json();
   let reply = data.content?.[0]?.text || 'Desculpe, ocorreu um erro.';
 
-  const marker = reply.match(/\[DADOS: nome="([^"]*)" caso="([^"]*)" plataforma="([^"]*)"\]/);
-  if (marker) {
-    clientData = { nome: marker[1], caso: marker[2], plataforma: marker[3] };
-    reply = reply.replace(/\[DADOS:[^\]]*\]/g, '').trim();
-    const tipo = clientData.caso.toLowerCase().includes('banco') || clientData.caso.toLowerCase().includes('bancária') ? 'banco' : 'rede';
-    setTimeout(() => showDocCard(tipo), 1200);
-    setTimeout(() => showClosingCard(), 2400);
+  // Captura dados completos
+  const markerFull = reply.match(/\[DADOS_COMPLETOS: nome="([^"]*)" cpf="([^"]*)" nascimento="([^"]*)" endereco="([^"]*)" caso="([^"]*)" plataforma="([^"]*)"\]/);
+  if (markerFull) {
+    clientData = { nome: markerFull[1], cpf: markerFull[2], nascimento: markerFull[3], endereco: markerFull[4], caso: markerFull[5], plataforma: markerFull[6] };
+    reply = reply.replace(/\[DADOS_COMPLETOS:[^\]]*\]/g,'').trim();
+    const tipo = clientData.caso.toLowerCase().includes('banco') ? 'banco' : 'rede';
+    setTimeout(() => showDocCard(tipo), 800);
+    setTimeout(() => showClosingCard(), 1600);
   }
 
-  if (!marker) {
-    const lower = reply.toLowerCase();
-    if (!docsShown && (lower.includes('rg') || lower.includes('print') || lower.includes('comprovante') || lower.includes('document'))) {
-      const tipo = lower.includes('banco') || lower.includes('bancária') ? 'banco' : 'rede';
-      setTimeout(() => showDocCard(tipo), 800);
-    }
+  // Captura dados parciais
+  const markerPartial = reply.match(/\[DADOS: nome="([^"]*)" caso="([^"]*)" plataforma="([^"]*)"\]/);
+  if (markerPartial && !markerFull) {
+    if (!clientData.nome) clientData.nome = markerPartial[1];
+    clientData.caso = markerPartial[2];
+    clientData.plataforma = markerPartial[3];
+    reply = reply.replace(/\[DADOS:[^\]]*\]/g,'').trim();
   }
 
   conv.push({ role: 'assistant', content: reply });
@@ -334,7 +324,7 @@ async function callClaude(msg) {
 }
 
 async function sendMsgText(text) {
-  if (!apiKey) { alert('Insira sua API Key para ativar a Ana.'); return; }
+  if (!WORKER_URL && !apiKey) { alert('Insira sua API Key para ativar a Ana.'); return; }
   if (!text.trim()) return;
   document.getElementById('quickReplies').innerHTML = '';
   addBubble('user', text);
@@ -344,65 +334,140 @@ async function sendMsgText(text) {
     removeTyping();
     const parts = reply.split('|||');
     await sendFragments(parts);
-    if (conv.length <= 2) {
-      setQR(['Conta bloqueada no Instagram', 'WhatsApp banido', 'Conta bancária bloqueada', 'TikTok suspenso']);
-    } else if (conv.length === 4) {
-      setQR(['Quanto custa?', 'Tenho chance de ganhar?', 'Quanto tempo demora?', 'Como funciona?']);
-    }
+    if (conv.length <= 2) setQR(['Conta bloqueada no Instagram','WhatsApp banido','Conta bancária bloqueada','TikTok suspenso']);
+    else if (conv.length === 4) setQR(['Quanto custa?','Tenho chance de ganhar?','Quanto tempo demora?','Como funciona?']);
   } catch(e) {
     removeTyping();
     addBubble('bot', 'Erro de conexão. Tente novamente. ' + e.message);
   }
 }
 
-function sendMsg() {
-  const inp = document.getElementById('msgInput');
-  const t = inp.value.trim();
-  inp.value = '';
-  if (t) sendMsgText(t);
+function sendMsg() { const inp = document.getElementById('msgInput'); const t = inp.value.trim(); inp.value = ''; if (t) sendMsgText(t); }
+
+function gerarContrato() {
+  const hoje = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'long', year:'numeric'});
+  const cidade = (clientData.endereco || '').split(',').pop()?.trim() || 'Salvador';
+  
+  return `JULIANA VIDAL ADVOCACIA
+
+
+CONTRATO DE PRESTAÇÃO DE SERVIÇOS ADVOCATÍCIOS E HONORÁRIOS
+
+
+CONTRATANTE
+
+${(clientData.nome || 'NOME DO CLIENTE').toUpperCase()}, inscrito no CPF sob o nº ${clientData.cpf || '___.___.___-__'}, nascido em ${clientData.nascimento || '__/__/____'}, residente e domiciliado na ${clientData.endereco || 'endereço completo'}, doravante denominado(a) CONTRATANTE.
+
+CONTRATADA
+
+JULIANA VIDAL, advogada inscrita na OAB/BA nº 71.943, com escritório profissional localizado em Lauro de Freitas – BA, telefone (71) 9 9210-4889, e-mail vidal.j.adv@gmail.com, doravante denominada CONTRATADA.
+
+
+CLÁUSULA 1ª – DO OBJETO
+
+O presente contrato tem por objeto a prestação de serviços advocatícios pela CONTRATADA ao CONTRATANTE, consistente no patrocínio de Ação no Juizado Especial referente a ${clientData.caso || 'bloqueio indevido'} em face de ${clientData.plataforma || 'empresa requerida'} (processo de defesa e protocolo de ação de indenização por danos morais), incluindo todos os atos processuais necessários ao regular andamento do feito, desde a propositura até o trânsito em julgado da decisão, salvo disposição em contrário.
+
+CLÁUSULA 2ª – DOS HONORÁRIOS ADVOCATÍCIOS
+
+Pela prestação dos serviços descritos na Cláusula 1ª, o CONTRATANTE pagará à CONTRATADA o percentual de 40% (quarenta por cento) sobre o valor obtido em caso de êxito, seja por meio de acordo, condenação judicial ou qualquer outra forma de solução favorável ao CONTRATANTE.
+
+Parágrafo único: Os honorários ora pactuados estão condicionados ao êxito da demanda. Não havendo resultado favorável, nenhum valor será devido pelo CONTRATANTE à CONTRATADA a título de honorários.
+
+CLÁUSULA 3ª – DAS OBRIGAÇÕES DA CONTRATADA
+
+A CONTRATADA obriga-se a: (i) atuar com diligência, competência e ética profissional; (ii) manter o CONTRATANTE informado sobre o andamento processual; (iii) praticar todos os atos processuais cabíveis dentro dos prazos legais.
+
+CLÁUSULA 4ª – DAS OBRIGAÇÕES DO CONTRATANTE
+
+O CONTRATANTE obriga-se a: (i) fornecer todos os documentos e informações necessários ao bom andamento da causa; (ii) comparecer aos atos processuais quando convocado; (iii) manter seus dados de contato atualizados junto à CONTRATADA.
+
+CLÁUSULA 5ª – DO DESCUMPRIMENTO E DA EXECUÇÃO
+
+O descumprimento de qualquer obrigação de pagamento prevista neste contrato autoriza a CONTRATADA a promover, de imediato, a execução judicial do presente instrumento, que constitui título executivo extrajudicial nos termos do art. 784, inciso III, do Código de Processo Civil.
+
+Parágrafo único: Sobre os valores em atraso incidirão multa de 2% (dois por cento) e juros moratórios de 1% (um por cento) ao mês, além de correção monetária pelo IPCA.
+
+CLÁUSULA 6ª – DO FORO
+
+As partes elegem o foro da Comarca de Salvador – BA para dirimir quaisquer controvérsias oriundas do presente contrato, renunciando a qualquer outro, por mais privilegiado que seja.
+
+E, por estarem assim justos e contratados, assinam o presente instrumento em 2 (duas) vias de igual teor e forma.
+
+Lauro de Freitas – BA, ${hoje}.
+
+
+_________________________________________________
+${(clientData.nome || 'NOME DO CLIENTE').toUpperCase()}
+CONTRATANTE – CPF: ${clientData.cpf || '___.___.___-__'}
+
+
+_________________________________________________
+JULIANA VIDAL
+CONTRATADA – OAB/BA 71.943
+
+
+(71) 9 9210-4889 | vidal.j.adv@gmail.com`;
+}
+
+function gerarProcuracao() {
+  const hoje = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'long', year:'numeric'});
+  
+  return `JULIANA VIDAL ADVOCACIA
+
+
+PROCURAÇÃO
+
+
+Prezado cliente, por meio deste documento de procuração você está concedendo poderes específicos para a advogada representar seus interesses.
+
+OUTORGANTE
+
+Outorgante ${(clientData.nome || 'NOME DO CLIENTE').toUpperCase()}, inscrito no CPF sob o nº ${clientData.cpf || '___.___.___-__'}, nascido em ${clientData.nascimento || '__/__/____'}, residente e domiciliado na ${clientData.endereco || 'endereço completo'}, nomeia e constitui como patrona a seguinte advogada:
+
+Outorgada:
+JULIANA VIDAL, inscrita na OAB/BA 71.943, telefone para contato (71) 9 9210-4889.
+
+OUTORGADA
+
+PODERES:
+
+Da cláusula "ad judicia" e os especiais para: transigir, fazer acordo, formar compromisso, desistir, receber e dar quitação, levantar ou receber alvarás e RPV, receber intimações em seu endereço residencial, praticar quaisquer atos perante repartições públicas Federais, Estaduais e Municipais, recorrer a quaisquer instâncias e tribunais e, inclusive, o de substabelecer com ou sem reserva de iguais poderes, e, ainda, usar de todos os meios admitidos em direito para promover qualquer medida judicial ou extrajudicial necessária à garantia dos direitos do(a) Outorgante e ao bom e fiel cumprimento deste mandato.
+
+Lauro de Freitas – BA, ${hoje}.
+
+
+_________________________________________________
+ASSINATURA DO OUTORGANTE
+
+
+(71) 9 9210-4889`;
 }
 
 async function generateDoc(tipo) {
-  const today = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-  const nome = clientData.nome || 'CLIENTE';
-  const caso = clientData.caso || 'bloqueio indevido';
-  const plataforma = clientData.plataforma || 'empresa requerida';
-  const prompt = tipo === 'contrato'
-    ? `Elabore um CONTRATO DE PRESTAÇÃO DE SERVIÇOS ADVOCATÍCIOS completo com: Contratada: Dra. Juliana Vidal, OAB/BA 71943, Juliana Vidal Advocacia, Salvador/BA, (71) 9 9210-4889, vidal.j.adv@gmail.com. Contratante: ${nome} (espaço para qualificação completa). Objeto: representação judicial para ${caso} em face de ${plataforma}, com pedido de reativação/desbloqueio e indenização por danos morais. Honorários: 40% sobre o êxito. Data: ${today}. Inclua: qualificação, objeto, honorários, obrigações, sigilo, rescisão, foro Salvador/BA, assinaturas e duas testemunhas. Formato jurídico formal.`
-    : `Elabore uma PROCURAÇÃO AD JUDICIA ET EXTRA completa com: Outorgante: ${nome} (espaço para qualificação). Outorgada: Dra. Juliana Vidal, OAB/BA 71943, Salvador/BA. Finalidade: representação em face de ${plataforma} — ${caso}. Data: ${today}. Inclua todos os poderes ad judicia, art. 105 CPC, substabelecimento. Formato jurídico completo.`;
   showTyping();
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1500, messages: [{ role: 'user', content: prompt }] })
-    });
-    const data = await res.json();
-    currentDoc = data.content?.[0]?.text || 'Erro ao gerar.';
-    removeTyping();
-    document.getElementById('modalTitle').textContent = tipo === 'contrato' ? '📄 Contrato de Honorários' : '✍️ Procuração Ad Judicia Et Extra';
-    document.getElementById('modalContent').textContent = currentDoc;
-    document.getElementById('modalOverlay').classList.add('open');
-  } catch(e) {
-    removeTyping();
-    alert('Erro ao gerar documento: ' + e.message);
-  }
+  await new Promise(r => setTimeout(r, 600));
+  removeTyping();
+  
+  currentDoc = tipo === 'contrato' ? gerarContrato() : gerarProcuracao();
+  document.getElementById('modalTitle').textContent = tipo === 'contrato' ? '📄 Contrato de Honorários' : '✍️ Procuração';
+  document.getElementById('modalContent').textContent = currentDoc;
+  document.getElementById('modalOverlay').classList.add('open');
 }
 
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+
 function copyDoc() {
   navigator.clipboard.writeText(currentDoc).then(() => {
-    const btn = document.getElementById('copyBtn');
-    btn.textContent = '✓ Copiado!';
+    const btn = document.getElementById('copyBtn'); btn.textContent = '✓ Copiado!';
     setTimeout(() => { btn.textContent = '📋 Copiar texto'; }, 2500);
   });
 }
 
 function startChat() {
   setTimeout(async () => {
-    const parts = ['Olá! Seja bem-vindo ao escritório Juliana Vidal Advocacia 😊', 'Sou a Ana, atendente da Dra. Juliana.', 'Me conta, o que aconteceu com você?'];
+    const parts = ['Olá! Seja bem-vindo ao escritório Juliana Vidal Advocacia 😊','Sou a Ana, atendente da Dra. Juliana.','Me conta, o que aconteceu com você?'];
     await sendFragments(parts);
-    setQR(['Conta bloqueada no Instagram', 'WhatsApp banido', 'Conta bancária bloqueada', 'TikTok suspenso']);
+    setQR(['Conta bloqueada no Instagram','WhatsApp banido','Conta bancária bloqueada','TikTok suspenso']);
   }, 400);
 }
 
