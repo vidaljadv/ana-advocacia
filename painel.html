@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel CRM · Juliana Vidal Advocacia</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--azul:#1a3a5c;--azul2:#0f2840;--azul-claro:#e8f0fe;--verde:#1a7a40;--verde-claro:#e8f5ee;--amarelo:#f59e0b;--amarelo-claro:#fef3c7;--vermelho:#dc2626;--vermelho-claro:#fee2e2;--cinza:#f8f9fa;--borda:#e5e7eb;--texto:#111827;--texto2:#6b7280}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0f4f8;color:var(--texto);min-height:100vh}
+.topbar{background:var(--azul);padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+.topbar-logo{color:#fff;font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-link{color:#a8c8e8;font-size:13px;text-decoration:none;padding:6px 14px;border:1px solid #a8c8e850;border-radius:20px;transition:all .15s}
+.topbar-link:hover{color:#fff;border-color:#fff}
+.container{max-width:1100px;margin:0 auto;padding:24px 20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:14px;padding:18px 20px;border:1px solid var(--borda);display:flex;flex-direction:column;gap:6px}
+.stat-label{font-size:12px;color:var(--texto2);font-weight:500}
+.stat-value{font-size:28px;font-weight:700;color:var(--azul)}
+.stat-sub{font-size:12px;color:var(--texto2)}
+.stat-card.verde .stat-value{color:var(--verde)}
+.stat-card.amarelo .stat-value{color:var(--amarelo)}
+.stat-card.roxo .stat-value{color:#7c3aed}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+.chart-card{background:#fff;border-radius:14px;padding:20px;border:1px solid var(--borda)}
+.chart-title{font-size:13px;font-weight:600;color:var(--texto2);margin-bottom:16px;text-transform:uppercase;letter-spacing:.5px}
+.chart-wrap{height:180px;position:relative}
+@media(max-width:640px){.charts{grid-template-columns:1fr}}
+.table-card{background:#fff;border-radius:14px;border:1px solid var(--borda);overflow:hidden;margin-bottom:24px}
+.table-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--borda);flex-wrap:gap}
+.table-title{font-size:15px;font-weight:600}
+.table-actions{display:flex;gap:8px;flex-wrap:wrap}
+.filter-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--borda);background:#fff;font-size:12px;font-family:inherit;cursor:pointer;color:var(--texto2);transition:all .15s}
+.filter-btn.active{background:var(--azul);color:#fff;border-color:var(--azul)}
+table{width:100%;border-collapse:collapse}
+th{padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--texto2);background:#f9fafb;text-transform:uppercase;letter-spacing:.4px}
+td{padding:12px 16px;font-size:13px;border-top:1px solid var(--borda);vertical-align:middle}
+tr:hover td{background:#f9fafb}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.aberto{background:var(--amarelo-claro);color:#92400e}
+.badge.contrato{background:var(--azul-claro);color:var(--azul)}
+.badge.fechado{background:var(--verde-claro);color:var(--verde)}
+.badge.rede{background:#ede9fe;color:#5b21b6}
+.badge.banco{background:#fce7f3;color:#9d174d}
+.btn-hist{background:none;border:1px solid var(--borda);border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;color:var(--texto2);font-family:inherit;transition:all .15s}
+.btn-hist:hover{background:var(--azul);color:#fff;border-color:var(--azul)}
+.empty{padding:48px;text-align:center;color:var(--texto2);font-size:14px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:0;width:100%;max-width:500px;max-height:85vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--borda);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-head h3{font-size:15px;font-weight:600}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--texto2);line-height:1}
+.modal-body{flex:1;overflow-y:auto;padding:16px 20px}
+.modal-info{display:grid;gap:10px}
+.info-row{display:flex;gap:8px;font-size:13px}
+.info-label{font-weight:600;color:var(--texto2);min-width:100px}
+.info-value{color:var(--texto)}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--borda);display:flex;gap:8px;flex-shrink:0}
+.modal-btn{flex:1;padding:10px;border-radius:8px;border:1px solid var(--borda);background:#f5f5f5;font-size:13px;font-family:inherit;cursor:pointer;font-weight:500}
+.modal-btn.danger{background:#fee2e2;color:var(--vermelho);border-color:#fecaca}
+.modal-btn.primary{background:var(--azul);color:#fff;border-color:var(--azul)}
+.add-form{background:#fff;border-radius:14px;border:1px solid var(--borda);padding:20px;margin-bottom:24px}
+.add-form h3{font-size:14px;font-weight:600;margin-bottom:14px;color:var(--texto2)}
+.form-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:11px;font-weight:600;color:var(--texto2);text-transform:uppercase;letter-spacing:.4px}
+.form-input,.form-select{border:1px solid var(--borda);border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none;background:#f9fafb}
+.form-input:focus,.form-select:focus{border-color:var(--azul);background:#fff}
+.add-btn{background:var(--azul);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.add-btn:hover{background:var(--azul2)}
+@media(max-width:640px){.form-row{grid-template-columns:1fr 1fr}}
+.conversao-bar{height:8px;background:#f0f4f8;border-radius:4px;overflow:hidden;margin-top:8px}
+.conversao-fill{height:100%;background:var(--verde);border-radius:4px;transition:width .5s}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">⚖️ Juliana Vidal Advocacia · CRM</div>
+  <div class="topbar-right">
+    <a class="topbar-link" href="index.html" target="_blank">Abrir Ana ↗</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Total de contatos</div>
+      <div class="stat-value" id="statTotal">0</div>
+      <div class="stat-sub">todos os casos</div>
+    </div>
+    <div class="stat-card amarelo">
+      <div class="stat-label">Em aberto</div>
+      <div class="stat-value" id="statAberto">0</div>
+      <div class="stat-sub">aguardando retorno</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Contratos gerados</div>
+      <div class="stat-value" id="statContrato">0</div>
+      <div class="stat-sub">prontos para assinar</div>
+    </div>
+    <div class="stat-card verde">
+      <div class="stat-label">Fechados</div>
+      <div class="stat-value" id="statFechado">0</div>
+      <div class="stat-sub">casos concluídos</div>
+    </div>
+    <div class="stat-card roxo">
+      <div class="stat-label">Taxa de conversão</div>
+      <div class="stat-value" id="statConversao">0%</div>
+      <div class="conversao-bar"><div class="conversao-fill" id="conversaoFill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="charts">
+    <div class="chart-card">
+      <div class="chart-title">Contatos por dia (últimos 7 dias)</div>
+      <div class="chart-wrap"><canvas id="chartDias"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Por tipo de caso</div>
+      <div class="chart-wrap"><canvas id="chartTipos"></canvas></div>
+    </div>
+  </div>
+
+  <div class="add-form">
+    <h3>Adicionar contato manualmente</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nome do cliente</label>
+        <input class="form-input" id="inpNome" placeholder="Ex: João Silva" />
+      </div>
+      <div class="form-group">
+        <label>Tipo de caso</label>
+        <select class="form-select" id="inpCaso">
+          <option value="rede">Rede social</option>
+          <option value="banco">Conta bancária</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Plataforma / Banco</label>
+        <input class="form-input" id="inpPlataforma" placeholder="Ex: Instagram, Nubank" />
+      </div>
+      <button class="add-btn" onclick="addContato()">+ Adicionar</button>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-header">
+      <div class="table-title">Contatos</div>
+      <div class="table-actions">
+        <button class="filter-btn active" onclick="filtrar('todos',this)">Todos</button>
+        <button class="filter-btn" onclick="filtrar('aberto',this)">Abertos</button>
+        <button class="filter-btn" onclick="filtrar('contrato',this)">Contrato</button>
+        <button class="filter-btn" onclick="filtrar('fechado',this)">Fechados</button>
+      </div>
+    </div>
+    <div id="tableWrap"><div class="empty">Nenhum contato ainda. Os leads da Ana aparecerão aqui automaticamente.</div></div>
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalNome">Detalhes</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-info" id="modalInfo"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="modal-btn danger" onclick="deleteContato()">🗑 Excluir</button>
+      <button class="modal-btn primary" onclick="closeModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'crm_contatos_jv';
+let contatos = [];
+let filtroAtual = 'todos';
+let modalId = null;
+let chartDias, chartTipos;
+
+function load() {
+  try { contatos = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { contatos = []; }
+}
+
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(contatos)); }
+
+function formatDate(iso) { return new Date(iso).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'2-digit'}); }
+
+function addContato(nome, caso, plataforma) {
+  if (!nome) {
+    nome = document.getElementById('inpNome').value.trim();
+    caso = document.getElementById('inpCaso').value;
+    plataforma = document.getElementById('inpPlataforma').value.trim();
+    if (!nome) { alert('Informe o nome do cliente.'); return; }
+    document.getElementById('inpNome').value = '';
+    document.getElementById('inpPlataforma').value = '';
+  }
+  const c = { id: Date.now(), nome, caso: caso || 'rede', plataforma: plataforma || '-', status: 'aberto', data: new Date().toISOString() };
+  contatos.unshift(c);
+  save();
+  render();
+}
+
+function updateStatus(id, status) {
+  const c = contatos.find(x => x.id === id);
+  if (c) { c.status = status; save(); render(); }
+}
+
+function deleteContato() {
+  if (!modalId) return;
+  if (!confirm('Excluir este contato?')) return;
+  contatos = contatos.filter(x => x.id !== modalId);
+  save(); closeModal(); render();
+}
+
+function openModal(id) {
+  modalId = id;
+  const c = contatos.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('modalNome').textContent = c.nome;
+  const tipo = c.caso === 'banco' ? 'Conta Bancária' : 'Rede Social';
+  document.getElementById('modalInfo').innerHTML = `
+    <div class="info-row"><span class="info-label">Nome</span><span class="info-value">${c.nome}</span></div>
+    <div class="info-row"><span class="info-label">Tipo</span><span class="info-value">${tipo}</span></div>
+    <div class="info-row"><span class="info-label">Plataforma</span><span class="info-value">${c.plataforma}</span></div>
+    <div class="info-row"><span class="info-label">Status</span><span class="info-value">${c.status}</span></div>
+    <div class="info-row"><span class="info-label">Data</span><span class="info-value">${formatDate(c.data)}</span></div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); modalId = null; }
+
+function filtrar(f, btn) {
+  filtroAtual = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function casoLabel(c) {
+  if (c === 'banco') return '<span class="badge banco">🏦 Banco</span>';
+  return '<span class="badge rede">📱 Rede social</span>';
+}
+
+function render() {
+  const total = contatos.length;
+  const aberto = contatos.filter(x=>x.status==='aberto').length;
+  const contrato = contatos.filter(x=>x.status==='contrato').length;
+  const fechado = contatos.filter(x=>x.status==='fechado').length;
+  const conversao = total > 0 ? Math.round((fechado / total) * 100) : 0;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statAberto').textContent = aberto;
+  document.getElementById('statContrato').textContent = contrato;
+  document.getElementById('statFechado').textContent = fechado;
+  document.getElementById('statConversao').textContent = conversao + '%';
+  document.getElementById('conversaoFill').style.width = conversao + '%';
+
+  const lista = filtroAtual === 'todos' ? contatos : contatos.filter(x => x.status === filtroAtual);
+  const wrap = document.getElementById('tableWrap');
+
+  if (lista.length === 0) {
+    wrap.innerHTML = '<div class="empty">Nenhum contato encontrado.</div>';
+  } else {
+    wrap.innerHTML = `<table>
+      <thead><tr><th>Nome</th><th>Caso</th><th>Plataforma</th><th>Status</th><th>Data</th><th></th></tr></thead>
+      <tbody>${lista.map(c => `<tr>
+        <td><strong>${c.nome}</strong></td>
+        <td>${casoLabel(c.caso)}</td>
+        <td>${c.plataforma || '-'}</td>
+        <td><select onchange="updateStatus(${c.id},this.value)" style="border:1px solid var(--borda);border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;background:#fff;cursor:pointer">
+          <option value="aberto" ${c.status==='aberto'?'selected':''}>● Aberto</option>
+          <option value="contrato" ${c.status==='contrato'?'selected':''}>📄 Contrato</option>
+          <option value="fechado" ${c.status==='fechado'?'selected':''}>✓ Fechado</option>
+        </select></td>
+        <td>${formatDate(c.data)}</td>
+        <td><button class="btn-hist" onclick="openModal(${c.id})">Ver</button></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }
+
+  renderCharts();
+}
+
+function renderCharts() {
+  const dias = [], counts = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    dias.push(d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}));
+    const dStr = d.toISOString().split('T')[0];
+    counts.push(contatos.filter(c => c.data.startsWith(dStr)).length);
+  }
+  if (chartDias) chartDias.destroy();
+  chartDias = new Chart(document.getElementById('chartDias'), {
+    type: 'bar',
+    data: { labels: dias, datasets: [{ data: counts, backgroundColor: '#1a3a5c', borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } } }, x: { ticks: { font: { size: 11 } } } } }
+  });
+
+  const nRede = contatos.filter(c => c.caso === 'rede').length;
+  const nBanco = contatos.filter(c => c.caso === 'banco').length;
+  if (chartTipos) chartTipos.destroy();
+  chartTipos = new Chart(document.getElementById('chartTipos'), {
+    type: 'doughnut',
+    data: { labels: ['Redes sociais','Conta bancária'], datasets: [{ data: [nRede||0, nBanco||0], backgroundColor: ['#5b21b6','#9d174d'], borderWidth: 0 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 12 } } } }
+  });
+}
+
+// Escuta leads novos da Ana em tempo real
+window.addEventListener('storage', (e) => {
+  if (e.key === 'ana_novo_lead' && e.newValue) {
+    try {
+      const d = JSON.parse(e.newValue);
+      addContato(d.nome, d.caso, d.plataforma);
+    } catch {}
+  }
+});
+
+load();
+render();
+</script>
+</body>
+</html>
