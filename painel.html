@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CRM · Juliana Vidal Advocacia</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d1f3c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CRM JV">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
@@ -19,6 +24,7 @@
   --vermelho:#b02a1e;--vermelho-bg:#fce8e6;
   --amarelo:#8a6a00;--amarelo-bg:#fef8e6;
   --roxo:#4a3a9a;--roxo-bg:#eeeafc;
+  --laranja:#c45c00;--laranja-bg:#fff0e6;
   --shadow:0 2px 12px rgba(13,31,60,0.08);
   --shadow2:0 4px 24px rgba(13,31,60,0.12);
 }
@@ -35,6 +41,11 @@ body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);min
 .topbar-link:hover{color:#e8eef4;border-color:rgba(255,255,255,0.3)}
 .menu-btn{background:none;border:1px solid rgba(255,255,255,0.12);cursor:pointer;color:rgba(180,200,216,0.7);font-size:18px;padding:7px 13px;border-radius:8px;line-height:1;transition:all .2s}
 .menu-btn:hover{color:#e8eef4;border-color:rgba(255,255,255,0.3)}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#1a7a45;display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+.sync-dot.erro{background:var(--vermelho);animation:none}
+.sync-dot.sync{background:var(--gold2);animation:spin 1s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes spin{to{transform:rotate(360deg)}}
 .tabs{background:var(--white);border-bottom:2px solid var(--borda2);display:flex;padding:0 32px;position:sticky;top:68px;z-index:90;box-shadow:var(--shadow);overflow-x:auto}
 .tabs::-webkit-scrollbar{display:none}
 .tab{padding:16px 22px;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;letter-spacing:.8px;text-transform:uppercase}
@@ -93,6 +104,7 @@ tr:hover td{background:var(--bg)}
 .badge{display:inline-flex;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.5px}
 .badge.rede{background:var(--roxo-bg);color:var(--roxo);border:1px solid rgba(74,58,154,0.15)}
 .badge.banco{background:var(--amarelo-bg);color:var(--amarelo);border:1px solid rgba(184,150,46,0.2)}
+.badge.onibus{background:var(--laranja-bg);color:var(--laranja);border:1px solid rgba(196,92,0,0.2)}
 .status-select{border:1px solid var(--borda);border-radius:6px;padding:4px 8px;font-size:11px;font-family:inherit;background:var(--white);color:var(--text2);cursor:pointer;outline:none}
 .btn-ver{background:none;border:1px solid var(--borda);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;color:var(--text3);font-family:inherit;transition:all .2s}
 .btn-ver:hover{color:var(--navy);border-color:var(--navy);background:var(--bg2)}
@@ -163,9 +175,15 @@ tr:hover td{background:var(--bg)}
 .einp:focus{border-color:var(--gold2);background:var(--white)}
 .rec-edit-btn{font-size:11px;color:var(--text3);background:none;border:1px solid var(--borda);border-radius:6px;padding:5px 12px;cursor:pointer;font-family:inherit;transition:all .2s}
 .rec-edit-btn:hover{color:var(--gold);border-color:var(--gold2)}
+.via-badge{display:inline-flex;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:600;letter-spacing:.5px}
+.via-badge.ana{background:rgba(13,31,60,0.08);color:var(--navy)}
+.via-badge.manual{background:var(--bg2);color:var(--text3)}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#e8eef4;padding:12px 20px;border-radius:10px;font-size:13px;z-index:9999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
 </style>
 </head>
 <body>
+
 <div class="topbar">
   <div class="logo-wrap">
     <img class="logo-img" src="LOGO.jpeg" alt="JV" onerror="this.style.display='none'">
@@ -176,27 +194,34 @@ tr:hover td{background:var(--bg)}
     </div>
   </div>
   <div class="topbar-right">
+    <span id="syncStatus" title="Status da sincronização"><span class="sync-dot" id="syncDot"></span><span id="syncLabel" style="font-size:11px;color:rgba(180,200,216,0.6)">sincronizado</span></span>
     <a class="topbar-link" href="index.html" target="_blank">Abrir Ana &#8599;</a>
     <button class="menu-btn" onclick="abrirMenu()">&#9776;</button>
   </div>
 </div>
+
 <div class="tabs">
   <button class="tab active" onclick="sP('dashboard',this)">Dashboard</button>
   <button class="tab" onclick="sP('contatos',this)">Contatos</button>
   <button class="tab" onclick="sP('funil',this)">Funil</button>
   <button class="tab" onclick="sP('receita',this)">Receita</button>
 </div>
+
 <div class="drawer-overlay" id="dOv" onclick="fecharMenu()"></div>
 <div class="drawer" id="drawer">
-  <div class="drawer-head"><h2>Configura&#231;&#245;es</h2><button class="drawer-close" onclick="fecharMenu()">&#x2715;</button></div>
+  <div class="drawer-head"><h2>Configurações</h2><button class="drawer-close" onclick="fecharMenu()">&#x2715;</button></div>
   <div class="drawer-body">
     <div class="drawer-section">Atendimento</div>
-    <button class="drawer-item" onclick="aC('nichos')"><span class="drawer-icon">&#128203;</span><div><div class="drawer-text">Nichos de atua&#231;&#227;o</div><div class="drawer-sub">&#193;reas e instru&#231;&#245;es da Ana</div></div></button>
-    <button class="drawer-item" onclick="aC('honorarios')"><span class="drawer-icon">&#9878;&#65039;</span><div><div class="drawer-text">Honor&#225;rios</div><div class="drawer-sub">Percentual e desconto</div></div></button>
-    <div class="drawer-section">Escrit&#243;rio</div>
-    <button class="drawer-item" onclick="aC('escritorio')"><span class="drawer-icon">&#127963;&#65039;</span><div><div class="drawer-text">Informa&#231;&#245;es</div><div class="drawer-sub">Nome, endere&#231;o, contato</div></div></button>
+    <button class="drawer-item" onclick="aC('nichos')"><span class="drawer-icon">&#128203;</span><div><div class="drawer-text">Nichos de atuação</div><div class="drawer-sub">Áreas e instruções da Ana</div></div></button>
+    <button class="drawer-item" onclick="aC('honorarios')"><span class="drawer-icon">&#9878;&#65039;</span><div><div class="drawer-text">Honorários</div><div class="drawer-sub">Percentual e desconto</div></div></button>
+    <div class="drawer-section">Escritório</div>
+    <button class="drawer-item" onclick="aC('escritorio')"><span class="drawer-icon">&#127963;&#65039;</span><div><div class="drawer-text">Informações</div><div class="drawer-sub">Nome, endereço, contato</div></div></button>
+    <div class="drawer-section">Dados</div>
+    <button class="drawer-item" onclick="sincronizarAgora()"><span class="drawer-icon">&#x21BB;</span><div><div class="drawer-text">Sincronizar agora</div><div class="drawer-sub">Buscar leads do servidor</div></div></button>
   </div>
 </div>
+
+<!-- Modal senha -->
 <div class="ov" id="pOv">
   <div class="box pass-box">
     <div class="boxtitle">Acesso Restrito</div>
@@ -206,14 +231,18 @@ tr:hover td{background:var(--bg)}
     <div class="perr" id="pErr">Senha incorreta.</div>
   </div>
 </div>
+
+<!-- Modal config -->
 <div class="ov" id="cOv">
   <div class="box cfg-box">
     <div class="boxrow"><div class="boxtitle" id="cTit"></div><button class="clx" onclick="document.getElementById('cOv').classList.remove('open')">&#x2715;</button></div>
     <div id="cCon"></div>
-    <button class="savebtn" onclick="salvarCfg()">Salvar altera&#231;&#245;es</button>
+    <button class="savebtn" onclick="salvarCfg()">Salvar alterações</button>
     <div class="ok" id="cfgOk">&#x2713; Salvo com sucesso</div>
   </div>
 </div>
+
+<!-- Modal contato -->
 <div class="ov" id="mOv">
   <div class="box modal-box">
     <div class="boxrow"><div class="boxtitle" id="mNome"></div><button class="clx" onclick="cM()">&#x2715;</button></div>
@@ -224,34 +253,49 @@ tr:hover td{background:var(--bg)}
     </div>
   </div>
 </div>
+
+<!-- Modal receita -->
 <div class="ov" id="eOv">
   <div class="box edit-box">
-    <div class="boxtitle" style="margin-bottom:22px">Editar Previs&#227;o</div>
-    <label class="elab">Valor m&#237;nimo (R$)</label><input class="einp" id="eMin" type="number">
-    <label class="elab">Valor m&#233;dio (R$)</label><input class="einp" id="eMed" type="number">
-    <label class="elab">Valor m&#225;ximo (R$)</label><input class="einp" id="eMax" type="number">
-    <label class="elab">Honor&#225;rios (%)</label><input class="einp" id="eHon" type="number">
+    <div class="boxtitle" style="margin-bottom:22px">Editar Previsão</div>
+    <label class="elab">Valor mínimo (R$)</label><input class="einp" id="eMin" type="number">
+    <label class="elab">Valor médio (R$)</label><input class="einp" id="eMed" type="number">
+    <label class="elab">Valor máximo (R$)</label><input class="einp" id="eMax" type="number">
+    <label class="elab">Honorários (%)</label><input class="einp" id="eHon" type="number">
     <button class="savebtn" onclick="sR()">Confirmar</button>
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
+
 <div class="container">
+
+  <!-- DASHBOARD -->
   <div class="page active" id="page-dashboard">
-    <div class="sec-header"><div class="sec-title">Vis&#227;o Geral</div><div class="sec-line"></div><div class="sec-badge" id="dAt"></div></div>
+    <div class="sec-header"><div class="sec-title">Visão Geral</div><div class="sec-line"></div><div class="sec-badge" id="dAt"></div></div>
     <div class="stats" id="sGrid"></div>
     <div class="charts-grid">
-      <div class="chart-card"><div class="chart-title">Contatos &mdash; &#218;ltimos 7 dias</div><div class="chart-wrap"><canvas id="cD"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Contatos — Últimos 7 dias</div><div class="chart-wrap"><canvas id="cD"></canvas></div></div>
       <div class="chart-card"><div class="chart-title">Por tipo de caso</div><div class="chart-wrap"><canvas id="cT"></canvas></div></div>
       <div class="chart-card"><div class="chart-title">Status atual</div><div class="chart-wrap"><canvas id="cS"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">Fechamentos &mdash; &#218;ltimas 4 semanas</div><div class="chart-wrap"><canvas id="cSm"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Fechamentos — Últimas 4 semanas</div><div class="chart-wrap"><canvas id="cSm"></canvas></div></div>
     </div>
   </div>
+
+  <!-- CONTATOS -->
   <div class="page" id="page-contatos">
     <div class="sec-header"><div class="sec-title">Contatos</div><div class="sec-line"></div></div>
     <div class="add-form-card">
       <div class="add-form-title">Adicionar manualmente</div>
       <div class="form-row">
         <div class="form-group"><div class="form-label">Nome</div><input class="form-input" id="iN" placeholder="Nome completo"></div>
-        <div class="form-group"><div class="form-label">Tipo</div><select class="form-select" id="iC"><option value="rede">Rede social</option><option value="banco">Conta banc&#225;ria</option></select></div>
+        <div class="form-group"><div class="form-label">Tipo</div>
+          <select class="form-select" id="iC">
+            <option value="rede">Rede social</option>
+            <option value="banco">Conta bancária</option>
+            <option value="onibus">Ônibus rodoviário</option>
+          </select>
+        </div>
         <div class="form-group"><div class="form-label">Plataforma / Banco</div><input class="form-input" id="iP" placeholder="Ex: Instagram"></div>
         <button class="add-btn" onclick="addC()">+ Adicionar</button>
       </div>
@@ -271,147 +315,442 @@ tr:hover td{background:var(--bg)}
       <div id="tW"></div>
     </div>
   </div>
+
+  <!-- FUNIL -->
   <div class="page" id="page-funil">
-    <div class="sec-header"><div class="sec-title">Funil de Convers&#227;o</div><div class="sec-line"></div></div>
+    <div class="sec-header"><div class="sec-title">Funil de Conversão</div><div class="sec-line"></div></div>
     <div class="funil-card"><div id="fS"></div></div>
     <div class="charts-grid">
-      <div class="chart-card"><div class="chart-title">Follow up vs Convers&#227;o direta</div><div class="chart-wrap"><canvas id="cFU"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">Composi&#231;&#227;o do funil</div><div class="chart-wrap"><canvas id="cFP"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Follow up vs Conversão direta</div><div class="chart-wrap"><canvas id="cFU"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Composição do funil</div><div class="chart-wrap"><canvas id="cFP"></canvas></div></div>
     </div>
   </div>
+
+  <!-- RECEITA -->
   <div class="page" id="page-receita">
     <div class="sec-header"><div class="sec-title">Estimativa de Receita</div><div class="sec-line"></div><button class="rec-edit-btn" onclick="aR()">&#x270E; Editar valores</button></div>
     <div class="rec-hero"><div class="rec-hero-grid" id="rH"></div></div>
     <div class="charts-grid">
-      <div class="chart-card"><div class="chart-title">Receita por m&#234;s</div><div class="chart-wrap"><canvas id="cRM"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">Distribui&#231;&#227;o por nicho</div><div class="chart-wrap"><canvas id="cRN"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Receita por mês</div><div class="chart-wrap"><canvas id="cRM"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Distribuição por nicho</div><div class="chart-wrap"><canvas id="cRN"></canvas></div></div>
     </div>
     <div class="table-wrap"><div class="table-header"><div class="table-title-text">Casos fechados</div></div><div id="rT"></div></div>
   </div>
+
 </div>
+
 <script>
-const SENHA="1234",SK="crm_contatos_jv",CK="ana_cfg",RK="ana_receita_cfg";
-const CFG_DEF={honorario_padrao:"40",honorario_minimo:"35",escritorio_nome:"Juliana Vidal Advocacia",escritorio_oab:"OAB/BA 71.943",escritorio_cidade:"Lauro de Freitas - BA",escritorio_gmn:"https://share.google/n7mRyKicECF2RWedc",nichos:[{id:"rede",nome:"Redes Sociais",ativo:true,instrucoes:"Bloqueio indevido de Instagram, WhatsApp, TikTok, Facebook. Cabe acao para reativar conta e indenizacao de R$5k a R$15k."},{id:"banco",nome:"Conta Bancaria",ativo:true,instrucoes:"Bloqueio de conta com saldo retido. Cabe acao para desbloquear, devolver saldo e indenizacao de R$5k a R$15k."}]};
-const RD={min:5000,med:10000,max:15000,hon:40};
-const lC=()=>{try{return JSON.parse(localStorage.getItem(CK))||CFG_DEF}catch{return CFG_DEF}};
-const sC=c=>localStorage.setItem(CK,JSON.stringify(c));
-const lCo=()=>{try{return JSON.parse(localStorage.getItem(SK))||[]}catch{return[]}};
-const sCo=()=>localStorage.setItem(SK,JSON.stringify(contatos));
-const lR=()=>{try{return JSON.parse(localStorage.getItem(RK))||RD}catch{return RD}};
-const sRec=r=>localStorage.setItem(RK,JSON.stringify(r));
-const fmt=n=>"R$ "+Number(n).toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:0});
-const fmtD=iso=>new Date(iso).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit"});
-let contatos=lCo(),flt="todos",mId=null,cAt=null,auth=false,CH={};
-document.getElementById("dAt").textContent=new Date().toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"short",year:"numeric"});
-function sP(id,btn){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));document.getElementById("page-"+id).classList.add("active");btn.classList.add("active");rP(id)}
-function gP(){const a=document.querySelector(".page.active");return a?a.id.replace("page-",""):"dashboard"}
-function abrirMenu(){document.getElementById("drawer").classList.add("open");document.getElementById("dOv").classList.add("open")}
-function fecharMenu(){document.getElementById("drawer").classList.remove("open");document.getElementById("dOv").classList.remove("open")}
-function aC(s){fecharMenu();if(auth){mCfg(s);return}cAt=s;document.getElementById("pIn").value="";document.getElementById("pErr").style.display="none";document.getElementById("pOv").classList.add("open");setTimeout(()=>document.getElementById("pIn").focus(),100)}
-function vS(){if(document.getElementById("pIn").value===SENHA){auth=true;document.getElementById("pOv").classList.remove("open");mCfg(cAt)}else{document.getElementById("pErr").style.display="block";document.getElementById("pIn").value=""}}
-function mCfg(s){
-  let cfg=lC();cAt=s;document.getElementById("cfgOk").style.display="none";
-  const t=document.getElementById("cTit"),c=document.getElementById("cCon");
-  if(s==="honorarios"){t.textContent="Honorários";c.innerHTML='<label class="cfg-label">Percentual padrão (%)</label><input class="cfg-input" id="cH1" type="number" value="'+cfg.honorario_padrao+'"><label class="cfg-label">Percentual mínimo (%)</label><input class="cfg-input" id="cH2" type="number" value="'+cfg.honorario_minimo+'">';}
-  else if(s==="escritorio"){t.textContent="Escritório";c.innerHTML='<label class="cfg-label">Nome</label><input class="cfg-input" id="cE1" value="'+cfg.escritorio_nome+'"><label class="cfg-label">OAB</label><input class="cfg-input" id="cE2" value="'+cfg.escritorio_oab+'"><label class="cfg-label">Cidade</label><input class="cfg-input" id="cE3" value="'+cfg.escritorio_cidade+'"><label class="cfg-label">Google Meu Negócio</label><input class="cfg-input" id="cE4" value="'+cfg.escritorio_gmn+'">';}
-  else if(s==="nichos"){t.textContent="Nichos";c.innerHTML=cfg.nichos.map((n,i)=>'<div class="nicho-card"><div class="nicho-head"><span class="nicho-name">'+n.nome+'</span><button class="ntoggle '+(n.ativo?"ativo":"")+'" onclick="tgN('+i+')">'+(n.ativo?"&#x2713; Ativo":"Inativo")+'</button></div><label class="cfg-label">Instruções</label><textarea class="cfg-textarea" id="cN'+i+'">'+n.instrucoes+'</textarea></div>').join('')+'<button class="add-nicho" onclick="addN()">+ Novo nicho</button>';}
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+const SENHA = "1234";
+const WORKER_URL = "https://ana-advocacia.vidal-j-adv.workers.dev";
+const CK = "ana_cfg";
+const RK = "ana_receita_cfg";
+
+const CFG_DEF = {
+  honorario_padrao: "40", honorario_minimo: "35",
+  escritorio_nome: "Juliana Vidal Advocacia", escritorio_oab: "OAB/BA 71.943",
+  escritorio_cidade: "Lauro de Freitas - BA", escritorio_gmn: "https://share.google/n7mRyKicECF2RWedc",
+  nichos: [
+    { id: "rede", nome: "Redes Sociais", ativo: true, instrucoes: "Bloqueio indevido de Instagram, WhatsApp, TikTok, Facebook." },
+    { id: "banco", nome: "Conta Bancária", ativo: true, instrucoes: "Bloqueio de conta com saldo retido." },
+    { id: "onibus", nome: "Ônibus Rodoviário", ativo: true, instrucoes: "Atraso ou quebra de ônibus rodoviário com dano ao passageiro." }
+  ]
+};
+const RD = { min: 5000, med: 10000, max: 15000, hon: 40 };
+
+const lC = () => { try { return JSON.parse(localStorage.getItem(CK)) || CFG_DEF; } catch { return CFG_DEF; } };
+const sC = c => localStorage.setItem(CK, JSON.stringify(c));
+const lR = () => { try { return JSON.parse(localStorage.getItem(RK)) || RD; } catch { return RD; } };
+const sRec = r => localStorage.setItem(RK, JSON.stringify(r));
+const fmt = n => "R$ " + Number(n).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const fmtD = iso => new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" });
+
+let contatos = [], flt = "todos", mId = null, cAt = null, auth = false, CH = {};
+
+document.getElementById("dAt").textContent = new Date().toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short", year: "numeric" });
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+// ─── SYNC STATUS ──────────────────────────────────────────────────────────────
+function setSyncStatus(status) {
+  const dot = document.getElementById("syncDot");
+  const label = document.getElementById("syncLabel");
+  dot.className = "sync-dot " + (status === "syncing" ? "sync" : status === "erro" ? "erro" : "");
+  label.textContent = status === "syncing" ? "sincronizando..." : status === "erro" ? "erro" : "sincronizado";
+}
+
+// ─── CARREGAR LEADS DO KV ─────────────────────────────────────────────────────
+async function carregarLeads() {
+  setSyncStatus("syncing");
+  try {
+    const res = await fetch(WORKER_URL + "/crm-leads");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      contatos = data;
+      setSyncStatus("ok");
+      rP(gP());
+    }
+  } catch (e) {
+    setSyncStatus("erro");
+    console.error("Erro ao carregar leads:", e);
+  }
+}
+
+async function sincronizarAgora() {
+  fecharMenu();
+  await carregarLeads();
+  toast("Dados sincronizados!");
+}
+
+// ─── SALVAR STATUS NO KV ──────────────────────────────────────────────────────
+async function salvarStatusKV(id, status) {
+  try {
+    await fetch(WORKER_URL + "/crm-leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "update_status", id, status })
+    });
+  } catch (e) {
+    console.error("Erro ao salvar status:", e);
+  }
+}
+
+async function deletarLeadKV(id) {
+  try {
+    await fetch(WORKER_URL + "/crm-leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "delete", id })
+    });
+  } catch (e) {
+    console.error("Erro ao deletar lead:", e);
+  }
+}
+
+async function adicionarLeadKV(lead) {
+  try {
+    const res = await fetch(WORKER_URL + "/crm-leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "add", ...lead })
+    });
+    const data = await res.json();
+    return data.lead;
+  } catch (e) {
+    console.error("Erro ao adicionar lead:", e);
+    return null;
+  }
+}
+
+// ─── NAVEGAÇÃO ────────────────────────────────────────────────────────────────
+function sP(id, btn) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.getElementById("page-" + id).classList.add("active");
+  btn.classList.add("active");
+  rP(id);
+}
+
+function gP() {
+  const a = document.querySelector(".page.active");
+  return a ? a.id.replace("page-", "") : "dashboard";
+}
+
+function abrirMenu() { document.getElementById("drawer").classList.add("open"); document.getElementById("dOv").classList.add("open"); }
+function fecharMenu() { document.getElementById("drawer").classList.remove("open"); document.getElementById("dOv").classList.remove("open"); }
+
+function aC(s) {
+  fecharMenu();
+  if (auth) { mCfg(s); return; }
+  cAt = s;
+  document.getElementById("pIn").value = "";
+  document.getElementById("pErr").style.display = "none";
+  document.getElementById("pOv").classList.add("open");
+  setTimeout(() => document.getElementById("pIn").focus(), 100);
+}
+
+function vS() {
+  if (document.getElementById("pIn").value === SENHA) {
+    auth = true;
+    document.getElementById("pOv").classList.remove("open");
+    mCfg(cAt);
+  } else {
+    document.getElementById("pErr").style.display = "block";
+    document.getElementById("pIn").value = "";
+  }
+}
+
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+function mCfg(s) {
+  let cfg = lC(); cAt = s;
+  document.getElementById("cfgOk").style.display = "none";
+  const t = document.getElementById("cTit"), c = document.getElementById("cCon");
+  if (s === "honorarios") {
+    t.textContent = "Honorários";
+    c.innerHTML = '<label class="cfg-label">Percentual padrão (%)</label><input class="cfg-input" id="cH1" type="number" value="' + cfg.honorario_padrao + '"><label class="cfg-label">Percentual mínimo (%)</label><input class="cfg-input" id="cH2" type="number" value="' + cfg.honorario_minimo + '">';
+  } else if (s === "escritorio") {
+    t.textContent = "Escritório";
+    c.innerHTML = '<label class="cfg-label">Nome</label><input class="cfg-input" id="cE1" value="' + cfg.escritorio_nome + '"><label class="cfg-label">OAB</label><input class="cfg-input" id="cE2" value="' + cfg.escritorio_oab + '"><label class="cfg-label">Cidade</label><input class="cfg-input" id="cE3" value="' + cfg.escritorio_cidade + '"><label class="cfg-label">Google Meu Negócio</label><input class="cfg-input" id="cE4" value="' + cfg.escritorio_gmn + '">';
+  } else if (s === "nichos") {
+    t.textContent = "Nichos";
+    c.innerHTML = cfg.nichos.map((n, i) => '<div class="nicho-card"><div class="nicho-head"><span class="nicho-name">' + n.nome + '</span><button class="ntoggle ' + (n.ativo ? "ativo" : "") + '" onclick="tgN(' + i + ')">' + (n.ativo ? "✓ Ativo" : "Inativo") + '</button></div><label class="cfg-label">Instruções</label><textarea class="cfg-textarea" id="cN' + i + '">' + n.instrucoes + '</textarea></div>').join('') + '<button class="add-nicho" onclick="addN()">+ Novo nicho</button>';
+  }
   document.getElementById("cOv").classList.add("open");
 }
-function tgN(i){let cfg=lC();cfg.nichos[i].ativo=!cfg.nichos[i].ativo;sC(cfg);mCfg("nichos")}
-function addN(){const n=prompt("Nome:");if(!n)return;let cfg=lC();cfg.nichos.push({id:"n"+Date.now(),nome:n,ativo:true,instrucoes:""});sC(cfg);mCfg("nichos")}
-function salvarCfg(){
-  let cfg=lC();
-  if(cAt==="honorarios"){cfg.honorario_padrao=document.getElementById("cH1").value;cfg.honorario_minimo=document.getElementById("cH2").value}
-  else if(cAt==="escritorio"){cfg.escritorio_nome=document.getElementById("cE1").value;cfg.escritorio_oab=document.getElementById("cE2").value;cfg.escritorio_cidade=document.getElementById("cE3").value;cfg.escritorio_gmn=document.getElementById("cE4").value}
-  else if(cAt==="nichos"){cfg.nichos.forEach((n,i)=>{const el=document.getElementById("cN"+i);if(el)n.instrucoes=el.value})}
-  sC(cfg);document.getElementById("cfgOk").style.display="block";setTimeout(()=>document.getElementById("cfgOk").style.display="none",2500)
+
+function tgN(i) { let cfg = lC(); cfg.nichos[i].ativo = !cfg.nichos[i].ativo; sC(cfg); mCfg("nichos"); }
+function addN() { const n = prompt("Nome:"); if (!n) return; let cfg = lC(); cfg.nichos.push({ id: "n" + Date.now(), nome: n, ativo: true, instrucoes: "" }); sC(cfg); mCfg("nichos"); }
+
+function salvarCfg() {
+  let cfg = lC();
+  if (cAt === "honorarios") { cfg.honorario_padrao = document.getElementById("cH1").value; cfg.honorario_minimo = document.getElementById("cH2").value; }
+  else if (cAt === "escritorio") { cfg.escritorio_nome = document.getElementById("cE1").value; cfg.escritorio_oab = document.getElementById("cE2").value; cfg.escritorio_cidade = document.getElementById("cE3").value; cfg.escritorio_gmn = document.getElementById("cE4").value; }
+  else if (cAt === "nichos") { cfg.nichos.forEach((n, i) => { const el = document.getElementById("cN" + i); if (el) n.instrucoes = el.value; }); }
+  sC(cfg);
+  document.getElementById("cfgOk").style.display = "block";
+  setTimeout(() => document.getElementById("cfgOk").style.display = "none", 2500);
 }
-function aR(){const r=lR();document.getElementById("eMin").value=r.min;document.getElementById("eMed").value=r.med;document.getElementById("eMax").value=r.max;document.getElementById("eHon").value=r.hon;document.getElementById("eOv").classList.add("open")}
-function sR(){sRec({min:+document.getElementById("eMin").value||5000,med:+document.getElementById("eMed").value||10000,max:+document.getElementById("eMax").value||15000,hon:+document.getElementById("eHon").value||40});document.getElementById("eOv").classList.remove("open");rP("receita")}
-function addC(nome,caso,plat){
-  if(!nome){nome=document.getElementById("iN").value.trim();caso=document.getElementById("iC").value;plat=document.getElementById("iP").value.trim();if(!nome){alert("Informe o nome.");return}document.getElementById("iN").value="";document.getElementById("iP").value=""}
-  contatos.unshift({id:Date.now(),nome,caso:caso||"rede",plataforma:plat||"-",status:"aberto",via:"direto",data:new Date().toISOString()});
-  sCo();rP(gP());
+
+// ─── RECEITA ──────────────────────────────────────────────────────────────────
+function aR() { const r = lR(); document.getElementById("eMin").value = r.min; document.getElementById("eMed").value = r.med; document.getElementById("eMax").value = r.max; document.getElementById("eHon").value = r.hon; document.getElementById("eOv").classList.add("open"); }
+function sR() { sRec({ min: +document.getElementById("eMin").value || 5000, med: +document.getElementById("eMed").value || 10000, max: +document.getElementById("eMax").value || 15000, hon: +document.getElementById("eHon").value || 40 }); document.getElementById("eOv").classList.remove("open"); rP("receita"); }
+
+// ─── ADICIONAR CONTATO ────────────────────────────────────────────────────────
+async function addC() {
+  const nome = document.getElementById("iN").value.trim();
+  const caso = document.getElementById("iC").value;
+  const plat = document.getElementById("iP").value.trim();
+  if (!nome) { alert("Informe o nome."); return; }
+
+  const novoLead = await adicionarLeadKV({ nome, caso, plataforma: plat || "-" });
+  if (novoLead) {
+    contatos.unshift(novoLead);
+  } else {
+    // Fallback local
+    contatos.unshift({ id: Date.now(), nome, caso, plataforma: plat || "-", status: "aberto", via: "manual", data: new Date().toISOString() });
+  }
+  document.getElementById("iN").value = "";
+  document.getElementById("iP").value = "";
+  toast("Contato adicionado!");
+  rP(gP());
 }
-function uS(id,s){const c=contatos.find(x=>x.id===id);if(c){c.status=s;sCo()}}
-function delC(){if(!mId||!confirm("Excluir?"))return;contatos=contatos.filter(x=>x.id!==mId);sCo();cM();rP(gP())}
-function oM(id){
-  mId=id;const c=contatos.find(x=>x.id===id);if(!c)return;
-  const r=lR();const est=c.status==="fechado"?fmt(r.med*(r.hon/100)):"—";
-  document.getElementById("mNome").textContent=c.nome;
-  document.getElementById("mBody").innerHTML='<div class="irow"><div class="ilbl">Nome</div><div>'+c.nome+'</div></div><div class="irow"><div class="ilbl">Tipo</div><div>'+(c.caso==="banco"?"Conta Bancária":"Rede Social")+'</div></div><div class="irow"><div class="ilbl">Plataforma</div><div>'+c.plataforma+'</div></div><div class="irow"><div class="ilbl">Status</div><div>'+c.status+'</div></div><div class="irow"><div class="ilbl">Data</div><div>'+fmtD(c.data)+'</div></div><div class="irow"><div class="ilbl">Receita est.</div><div style="font-weight:700;color:var(--gold)">'+est+'</div></div>';
+
+// ─── ATUALIZAR STATUS ─────────────────────────────────────────────────────────
+async function uS(id, s) {
+  const c = contatos.find(x => x.id === id);
+  if (c) {
+    c.status = s;
+    await salvarStatusKV(id, s);
+  }
+}
+
+// ─── DELETAR CONTATO ──────────────────────────────────────────────────────────
+async function delC() {
+  if (!mId || !confirm("Excluir este contato?")) return;
+  contatos = contatos.filter(x => x.id !== mId);
+  await deletarLeadKV(mId);
+  cM();
+  toast("Contato excluído.");
+  rP(gP());
+}
+
+// ─── MODAL CONTATO ────────────────────────────────────────────────────────────
+function oM(id) {
+  mId = id;
+  const c = contatos.find(x => x.id === id);
+  if (!c) return;
+  const r = lR();
+  const est = c.status === "fechado" ? fmt(r.med * (r.hon / 100)) : "—";
+  const casoLabel = c.caso === "banco" ? "Conta Bancária" : c.caso === "onibus" ? "Ônibus Rodoviário" : "Rede Social";
+  document.getElementById("mNome").textContent = c.nome;
+  document.getElementById("mBody").innerHTML =
+    '<div class="irow"><div class="ilbl">Nome</div><div>' + c.nome + '</div></div>' +
+    '<div class="irow"><div class="ilbl">Tipo</div><div>' + casoLabel + '</div></div>' +
+    '<div class="irow"><div class="ilbl">Plataforma</div><div>' + (c.plataforma || '-') + '</div></div>' +
+    '<div class="irow"><div class="ilbl">Status</div><div>' + c.status + '</div></div>' +
+    '<div class="irow"><div class="ilbl">Origem</div><div>' + (c.via === 'ana' ? '🤖 Ana (automático)' : '✍️ Manual') + '</div></div>' +
+    (c.telefone ? '<div class="irow"><div class="ilbl">Telefone</div><div>' + c.telefone + '</div></div>' : '') +
+    '<div class="irow"><div class="ilbl">Data</div><div>' + fmtD(c.data) + '</div></div>' +
+    '<div class="irow"><div class="ilbl">Receita est.</div><div style="font-weight:700;color:var(--gold)">' + est + '</div></div>';
   document.getElementById("mOv").classList.add("open");
 }
-function cM(){document.getElementById("mOv").classList.remove("open");mId=null}
-function fil(f,btn){flt=f;document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");rTab()}
-function dCh(k){if(CH[k]){CH[k].destroy();delete CH[k]}}
-const CO={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:"#7a96aa",font:{size:10,family:"DM Mono"}},grid:{color:"rgba(13,31,60,0.05)"}},x:{ticks:{color:"#7a96aa",font:{size:10,family:"DM Mono"}},grid:{display:false}}}};
-const DO={responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{position:"bottom",labels:{color:"#3d5a70",font:{size:11,family:"DM Sans"},padding:14,boxWidth:10}}}};
-function rDash(){
-  const tot=contatos.length,ab=contatos.filter(x=>x.status==="aberto").length,neg=contatos.filter(x=>x.status==="negociando").length;
-  const fech=contatos.filter(x=>x.status==="fechado").length,fu=contatos.filter(x=>x.status==="followup").length,des=contatos.filter(x=>x.status==="desistiu").length;
-  const conv=tot>0?Math.round(fech/tot*100):0;const r=lR();const recE=fech*r.med*(r.hon/100);
-  document.getElementById("sGrid").innerHTML=
-    '<div class="stat-card"><div class="stat-label">Total</div><div class="stat-value">'+tot+'</div><div class="stat-sub">contatos</div></div>'+
-    '<div class="stat-card"><div class="stat-label">Em aberto</div><div class="stat-value" style="color:var(--amarelo)">'+ab+'</div><div class="stat-sub">aguardando</div></div>'+
-    '<div class="stat-card"><div class="stat-label">Negociando</div><div class="stat-value" style="color:var(--text2)">'+neg+'</div><div class="stat-sub">em tratativa</div></div>'+
-    '<div class="stat-card verde"><div class="stat-label">Fechados</div><div class="stat-value">'+fech+'</div><div class="stat-sub">contratos</div></div>'+
-    '<div class="stat-card"><div class="stat-label">Follow up</div><div class="stat-value" style="color:var(--roxo)">'+fu+'</div><div class="stat-sub">retomando</div></div>'+
-    '<div class="stat-card"><div class="stat-label">Desistiram</div><div class="stat-value" style="color:var(--vermelho)">'+des+'</div><div class="stat-sub">nao fecharam</div></div>'+
-    '<div class="stat-card gold"><div class="stat-label">Conversao</div><div class="stat-value">'+conv+'%</div><div class="stat-sub">taxa geral</div></div>'+
-    '<div class="stat-card gold"><div class="stat-label">Receita est.</div><div class="stat-value" style="font-size:20px">'+fmt(recE)+'</div><div class="stat-sub">'+r.hon+'% x '+fmt(r.med)+'</div></div>';
-  const dias=[],counts=[];
-  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dias.push(d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}));const s=d.toISOString().split("T")[0];counts.push(contatos.filter(c=>c.data.startsWith(s)).length)}
-  dCh("d");CH.d=new Chart(document.getElementById("cD"),{type:"bar",data:{labels:dias,datasets:[{data:counts,backgroundColor:"rgba(13,31,60,0.12)",borderColor:"rgba(13,31,60,0.3)",borderWidth:1,borderRadius:5,hoverBackgroundColor:"rgba(184,150,46,0.3)"}]},options:{...CO,plugins:{legend:{display:false}}}});
-  const nR=contatos.filter(c=>c.caso==="rede").length,nB=contatos.filter(c=>c.caso==="banco").length;
-  dCh("t");CH.t=new Chart(document.getElementById("cT"),{type:"doughnut",data:{labels:["Redes sociais","Conta bancaria"],datasets:[{data:[nR||0,nB||0],backgroundColor:["rgba(74,58,154,0.5)","rgba(184,150,46,0.5)"],borderWidth:0}]},options:DO});
-  dCh("s");CH.s=new Chart(document.getElementById("cS"),{type:"doughnut",data:{labels:["Aberto","Negociando","Fechado","Follow up","Desistiu"],datasets:[{data:[ab,neg,fech,fu,des],backgroundColor:["rgba(138,106,0,0.5)","rgba(13,31,60,0.4)","rgba(26,122,69,0.5)","rgba(74,58,154,0.5)","rgba(176,42,30,0.5)"],borderWidth:0}]},options:DO});
-  const sems=["Sem -3","Sem -2","Sem -1","Esta sem"];
-  const fSem=sems.map((_,i)=>{const ini=new Date();ini.setDate(ini.getDate()-(3-i)*7);const fim=new Date(ini);fim.setDate(fim.getDate()+7);return contatos.filter(c=>c.status==="fechado"&&new Date(c.data)>=ini&&new Date(c.data)<fim).length});
-  dCh("sm");CH.sm=new Chart(document.getElementById("cSm"),{type:"line",data:{labels:sems,datasets:[{data:fSem,borderColor:"rgba(26,122,69,0.8)",backgroundColor:"rgba(26,122,69,0.06)",tension:.4,fill:true,pointBackgroundColor:"#1a7a45",pointRadius:4,pointBorderWidth:0}]},options:{...CO,plugins:{legend:{display:false}}}});
+
+function cM() { document.getElementById("mOv").classList.remove("open"); mId = null; }
+
+// ─── FILTRO ───────────────────────────────────────────────────────────────────
+function fil(f, btn) {
+  flt = f;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  rTab();
 }
-function rTab(){
-  const lista=flt==="todos"?contatos:contatos.filter(x=>x.status===flt);
-  const w=document.getElementById("tW");
-  if(!lista.length){w.innerHTML='<div class="empty">Nenhum contato encontrado.</div>';return}
-  w.innerHTML="<table><thead><tr><th>Nome</th><th>Caso</th><th>Plataforma</th><th>Status</th><th>Data</th><th></th></tr></thead><tbody>"+
-  lista.map(c=>"<tr><td style='font-weight:600;color:var(--navy)'>"+c.nome+"</td><td>"+(c.caso==="banco"?'<span class="badge banco">Banco</span>':'<span class="badge rede">Rede</span>')+"</td><td style='color:var(--text2)'>"+c.plataforma+"</td><td><select class='status-select' onchange='uS("+c.id+",this.value)'><option value='aberto' "+(c.status==="aberto"?"selected":"")+" >Aberto</option><option value='negociando' "+(c.status==="negociando"?"selected":"")+" >Negociando</option><option value='fechado' "+(c.status==="fechado"?"selected":"")+" >Fechado</option><option value='followup' "+(c.status==="followup"?"selected":"")+" >Follow up</option><option value='desistiu' "+(c.status==="desistiu"?"selected":"")+" >Desistiu</option></select></td><td style='color:var(--text3);font-size:11px'>"+fmtD(c.data)+"</td><td><button class='btn-ver' onclick='oM("+c.id+")'>Ver</button></td></tr>").join("")+
-  "</tbody></table>";
+
+// ─── CHARTS ───────────────────────────────────────────────────────────────────
+function dCh(k) { if (CH[k]) { CH[k].destroy(); delete CH[k]; } }
+
+const CO = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    y: { beginAtZero: true, ticks: { color: "#7a96aa", font: { size: 10, family: "DM Mono" } }, grid: { color: "rgba(13,31,60,0.05)" } },
+    x: { ticks: { color: "#7a96aa", font: { size: 10, family: "DM Mono" } }, grid: { display: false } }
+  }
+};
+const DO = {
+  responsive: true, maintainAspectRatio: false, cutout: "65%",
+  plugins: { legend: { position: "bottom", labels: { color: "#3d5a70", font: { size: 11, family: "DM Sans" }, padding: 14, boxWidth: 10 } } }
+};
+
+// ─── BADGE CASO ───────────────────────────────────────────────────────────────
+function badgeCaso(caso) {
+  if (caso === "banco") return '<span class="badge banco">Banco</span>';
+  if (caso === "onibus") return '<span class="badge onibus">Ônibus</span>';
+  return '<span class="badge rede">Rede</span>';
 }
-function rFunil(){
-  const et=[{l:"Entraram",n:contatos.length,c:"#0d1f3c"},{l:"Negociando",n:contatos.filter(x=>x.status==="negociando").length,c:"#4a3a9a"},{l:"Follow up",n:contatos.filter(x=>x.status==="followup").length,c:"#b8962e"},{l:"Fecharam",n:contatos.filter(x=>x.status==="fechado").length,c:"#1a7a45"},{l:"Desistiram",n:contatos.filter(x=>x.status==="desistiu").length,c:"#b02a1e"}];
-  const mx=et[0].n||1;
-  document.getElementById("fS").innerHTML=et.map(e=>'<div class="funil-step"><div class="funil-label">'+e.l+'</div><div class="funil-bar-wrap"><div class="funil-bar" style="background:'+e.c+';width:'+Math.max(4,e.n/mx*100)+'%">'+(e.n>0?e.n:"")+'</div></div><div class="funil-num">'+e.n+'</div><div class="funil-pct">'+Math.round(e.n/mx*100)+'%</div></div>').join("");
-  const fD=contatos.filter(c=>c.status==="fechado"&&c.via!=="followup").length;
-  const fF=contatos.filter(c=>c.status==="fechado"&&c.via==="followup").length;
-  dCh("fu");CH.fu=new Chart(document.getElementById("cFU"),{type:"doughnut",data:{labels:["Direto","Via follow up"],datasets:[{data:[fD||0,fF||0],backgroundColor:["rgba(13,31,60,0.5)","rgba(74,58,154,0.5)"],borderWidth:0}]},options:DO});
-  dCh("fp");CH.fp=new Chart(document.getElementById("cFP"),{type:"doughnut",data:{labels:et.map(e=>e.l),datasets:[{data:et.map(e=>e.n),backgroundColor:["rgba(13,31,60,0.5)","rgba(74,58,154,0.4)","rgba(184,150,46,0.5)","rgba(26,122,69,0.5)","rgba(176,42,30,0.4)"],borderWidth:0}]},options:DO});
+
+// ─── RENDER DASHBOARD ─────────────────────────────────────────────────────────
+function rDash() {
+  const tot = contatos.length;
+  const ab = contatos.filter(x => x.status === "aberto").length;
+  const neg = contatos.filter(x => x.status === "negociando").length;
+  const fech = contatos.filter(x => x.status === "fechado").length;
+  const fu = contatos.filter(x => x.status === "followup").length;
+  const des = contatos.filter(x => x.status === "desistiu").length;
+  const conv = tot > 0 ? Math.round(fech / tot * 100) : 0;
+  const r = lR();
+  const recE = fech * r.med * (r.hon / 100);
+
+  document.getElementById("sGrid").innerHTML =
+    '<div class="stat-card"><div class="stat-label">Total</div><div class="stat-value">' + tot + '</div><div class="stat-sub">contatos</div></div>' +
+    '<div class="stat-card"><div class="stat-label">Em aberto</div><div class="stat-value" style="color:var(--amarelo)">' + ab + '</div><div class="stat-sub">aguardando</div></div>' +
+    '<div class="stat-card"><div class="stat-label">Negociando</div><div class="stat-value" style="color:var(--text2)">' + neg + '</div><div class="stat-sub">em tratativa</div></div>' +
+    '<div class="stat-card verde"><div class="stat-label">Fechados</div><div class="stat-value">' + fech + '</div><div class="stat-sub">contratos</div></div>' +
+    '<div class="stat-card"><div class="stat-label">Follow up</div><div class="stat-value" style="color:var(--roxo)">' + fu + '</div><div class="stat-sub">retomando</div></div>' +
+    '<div class="stat-card"><div class="stat-label">Desistiram</div><div class="stat-value" style="color:var(--vermelho)">' + des + '</div><div class="stat-sub">nao fecharam</div></div>' +
+    '<div class="stat-card gold"><div class="stat-label">Conversao</div><div class="stat-value">' + conv + '%</div><div class="stat-sub">taxa geral</div></div>' +
+    '<div class="stat-card gold"><div class="stat-label">Receita est.</div><div class="stat-value" style="font-size:20px">' + fmt(recE) + '</div><div class="stat-sub">' + r.hon + '% x ' + fmt(r.med) + '</div></div>';
+
+  const dias = [], counts = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    dias.push(d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }));
+    const s = d.toISOString().split("T")[0];
+    counts.push(contatos.filter(c => c.data.startsWith(s)).length);
+  }
+  dCh("d"); CH.d = new Chart(document.getElementById("cD"), { type: "bar", data: { labels: dias, datasets: [{ data: counts, backgroundColor: "rgba(13,31,60,0.12)", borderColor: "rgba(13,31,60,0.3)", borderWidth: 1, borderRadius: 5, hoverBackgroundColor: "rgba(184,150,46,0.3)" }] }, options: { ...CO, plugins: { legend: { display: false } } } });
+
+  const nR = contatos.filter(c => c.caso === "rede").length;
+  const nB = contatos.filter(c => c.caso === "banco").length;
+  const nO = contatos.filter(c => c.caso === "onibus").length;
+  dCh("t"); CH.t = new Chart(document.getElementById("cT"), { type: "doughnut", data: { labels: ["Redes sociais", "Conta bancária", "Ônibus"], datasets: [{ data: [nR || 0, nB || 0, nO || 0], backgroundColor: ["rgba(74,58,154,0.5)", "rgba(184,150,46,0.5)", "rgba(196,92,0,0.5)"], borderWidth: 0 }] }, options: DO });
+  dCh("s"); CH.s = new Chart(document.getElementById("cS"), { type: "doughnut", data: { labels: ["Aberto", "Negociando", "Fechado", "Follow up", "Desistiu"], datasets: [{ data: [ab, neg, fech, fu, des], backgroundColor: ["rgba(138,106,0,0.5)", "rgba(13,31,60,0.4)", "rgba(26,122,69,0.5)", "rgba(74,58,154,0.5)", "rgba(176,42,30,0.5)"], borderWidth: 0 }] }, options: DO });
+
+  const sems = ["Sem -3", "Sem -2", "Sem -1", "Esta sem"];
+  const fSem = sems.map((_, i) => { const ini = new Date(); ini.setDate(ini.getDate() - (3 - i) * 7); const fim = new Date(ini); fim.setDate(fim.getDate() + 7); return contatos.filter(c => c.status === "fechado" && new Date(c.data) >= ini && new Date(c.data) < fim).length; });
+  dCh("sm"); CH.sm = new Chart(document.getElementById("cSm"), { type: "line", data: { labels: sems, datasets: [{ data: fSem, borderColor: "rgba(26,122,69,0.8)", backgroundColor: "rgba(26,122,69,0.06)", tension: .4, fill: true, pointBackgroundColor: "#1a7a45", pointRadius: 4, pointBorderWidth: 0 }] }, options: { ...CO, plugins: { legend: { display: false } } } });
 }
-function rReceita(){
-  const r=lR();const hon=r.hon/100;const fech=contatos.filter(c=>c.status==="fechado");
-  const pipe=contatos.filter(c=>["negociando","followup"].includes(c.status)).length;
-  document.getElementById("rH").innerHTML=
-    '<div><div class="rec-item-label">Casos fechados</div><div class="rec-item-value">'+fech.length+'</div><div class="rec-item-sub">contratos</div></div>'+
-    '<div class="rec-divider"></div>'+
-    '<div><div class="rec-item-label">Receita estimada</div><div class="rec-item-value">'+fmt(fech.length*r.med*hon)+'</div><div class="rec-item-sub">'+r.hon+'% x '+fmt(r.med)+'</div></div>'+
-    '<div class="rec-divider"></div>'+
-    '<div><div class="rec-item-label">Cenario otimista</div><div class="rec-item-value">'+fmt(fech.length*r.max*hon)+'</div><div class="rec-item-sub">'+r.hon+'% x '+fmt(r.max)+'</div></div>'+
-    '<div class="rec-divider"></div>'+
-    '<div><div class="rec-item-label">Em pipeline</div><div class="rec-item-value">'+pipe+'</div><div class="rec-item-sub">negociando + follow up</div></div>';
-  const meses=[],recM=[];
-  for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);meses.push(d.toLocaleDateString("pt-BR",{month:"short"}));const m=d.getMonth(),y=d.getFullYear();const n=fech.filter(c=>{const cd=new Date(c.data);return cd.getMonth()===m&&cd.getFullYear()===y}).length;recM.push(n*r.med*hon)}
-  dCh("rm");CH.rm=new Chart(document.getElementById("cRM"),{type:"bar",data:{labels:meses,datasets:[{data:recM,backgroundColor:"rgba(184,150,46,0.2)",borderColor:"rgba(184,150,46,0.7)",borderWidth:1.5,borderRadius:5}]},options:{...CO,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.raw)}}},scales:{...CO.scales,y:{...CO.scales.y,ticks:{...CO.scales.y.ticks,callback:v=>fmt(v)}}}}});
-  const nR=fech.filter(c=>c.caso==="rede").length,nB=fech.filter(c=>c.caso==="banco").length;
-  dCh("rn");CH.rn=new Chart(document.getElementById("cRN"),{type:"doughnut",data:{labels:["Redes sociais","Conta bancaria"],datasets:[{data:[nR*r.med*hon||0,nB*r.med*hon||0],backgroundColor:["rgba(74,58,154,0.5)","rgba(184,150,46,0.5)"],borderWidth:0}]},options:{...DO,plugins:{...DO.plugins,tooltip:{callbacks:{label:c=>fmt(c.raw)}}}}});
-  const rt=document.getElementById("rT");
-  if(!fech.length){rt.innerHTML='<div class="empty">Nenhum caso fechado ainda.</div>';return}
-  rt.innerHTML="<table><thead><tr><th>Nome</th><th>Caso</th><th>Data</th><th>Minimo</th><th>Medio</th><th>Maximo</th></tr></thead><tbody>"+
-  fech.map(c=>"<tr><td style='font-weight:600;color:var(--navy)'>"+c.nome+"</td><td>"+(c.caso==="banco"?'<span class="badge banco">Banco</span>':'<span class="badge rede">Rede</span>')+"</td><td style='color:var(--text3);font-size:11px'>"+fmtD(c.data)+"</td><td style='color:var(--text3)'>"+fmt(r.min*hon)+"</td><td style='color:var(--gold);font-weight:700'>"+fmt(r.med*hon)+"</td><td style='color:var(--navy2)'>"+fmt(r.max*hon)+"</td></tr>").join("")+
-  "</tbody></table>";
+
+// ─── RENDER TABELA ────────────────────────────────────────────────────────────
+function rTab() {
+  const lista = flt === "todos" ? contatos : contatos.filter(x => x.status === flt);
+  const w = document.getElementById("tW");
+  if (!lista.length) { w.innerHTML = '<div class="empty">Nenhum contato encontrado.</div>'; return; }
+  w.innerHTML = "<table><thead><tr><th>Nome</th><th>Caso</th><th>Plataforma</th><th>Status</th><th>Origem</th><th>Data</th><th></th></tr></thead><tbody>" +
+    lista.map(c =>
+      "<tr>" +
+      "<td style='font-weight:600;color:var(--navy)'>" + c.nome + "</td>" +
+      "<td>" + badgeCaso(c.caso) + "</td>" +
+      "<td style='color:var(--text2)'>" + (c.plataforma || "-") + "</td>" +
+      "<td><select class='status-select' onchange='uS(" + c.id + ",this.value)'>" +
+      "<option value='aberto'" + (c.status === "aberto" ? " selected" : "") + ">Aberto</option>" +
+      "<option value='negociando'" + (c.status === "negociando" ? " selected" : "") + ">Negociando</option>" +
+      "<option value='fechado'" + (c.status === "fechado" ? " selected" : "") + ">Fechado</option>" +
+      "<option value='followup'" + (c.status === "followup" ? " selected" : "") + ">Follow up</option>" +
+      "<option value='desistiu'" + (c.status === "desistiu" ? " selected" : "") + ">Desistiu</option>" +
+      "</select></td>" +
+      "<td><span class='via-badge " + (c.via === "ana" ? "ana" : "manual") + "'>" + (c.via === "ana" ? "Ana" : "Manual") + "</span></td>" +
+      "<td style='color:var(--text3);font-size:11px'>" + fmtD(c.data) + "</td>" +
+      "<td><button class='btn-ver' onclick='oM(" + c.id + ")'>Ver</button></td>" +
+      "</tr>"
+    ).join("") + "</tbody></table>";
 }
-function rP(id){if(id==="dashboard")rDash();else if(id==="contatos")rTab();else if(id==="funil")rFunil();else if(id==="receita")rReceita()}
-window.addEventListener("storage",e=>{if(e.key==="ana_novo_lead"&&e.newValue){try{const d=JSON.parse(e.newValue);addC(d.nome,d.caso,d.plataforma)}catch{}}});
-rDash();
+
+// ─── RENDER FUNIL ─────────────────────────────────────────────────────────────
+function rFunil() {
+  const et = [
+    { l: "Entraram", n: contatos.length, c: "#0d1f3c" },
+    { l: "Negociando", n: contatos.filter(x => x.status === "negociando").length, c: "#4a3a9a" },
+    { l: "Follow up", n: contatos.filter(x => x.status === "followup").length, c: "#b8962e" },
+    { l: "Fecharam", n: contatos.filter(x => x.status === "fechado").length, c: "#1a7a45" },
+    { l: "Desistiram", n: contatos.filter(x => x.status === "desistiu").length, c: "#b02a1e" }
+  ];
+  const mx = et[0].n || 1;
+  document.getElementById("fS").innerHTML = et.map(e =>
+    '<div class="funil-step"><div class="funil-label">' + e.l + '</div><div class="funil-bar-wrap"><div class="funil-bar" style="background:' + e.c + ';width:' + Math.max(4, e.n / mx * 100) + '%">' + (e.n > 0 ? e.n : "") + '</div></div><div class="funil-num">' + e.n + '</div><div class="funil-pct">' + Math.round(e.n / mx * 100) + '%</div></div>'
+  ).join("");
+  const fD = contatos.filter(c => c.status === "fechado" && c.via !== "followup").length;
+  const fF = contatos.filter(c => c.status === "fechado" && c.via === "followup").length;
+  dCh("fu"); CH.fu = new Chart(document.getElementById("cFU"), { type: "doughnut", data: { labels: ["Direto", "Via follow up"], datasets: [{ data: [fD || 0, fF || 0], backgroundColor: ["rgba(13,31,60,0.5)", "rgba(74,58,154,0.5)"], borderWidth: 0 }] }, options: DO });
+  dCh("fp"); CH.fp = new Chart(document.getElementById("cFP"), { type: "doughnut", data: { labels: et.map(e => e.l), datasets: [{ data: et.map(e => e.n), backgroundColor: ["rgba(13,31,60,0.5)", "rgba(74,58,154,0.4)", "rgba(184,150,46,0.5)", "rgba(26,122,69,0.5)", "rgba(176,42,30,0.4)"], borderWidth: 0 }] }, options: DO });
+}
+
+// ─── RENDER RECEITA ───────────────────────────────────────────────────────────
+function rReceita() {
+  const r = lR(); const hon = r.hon / 100;
+  const fech = contatos.filter(c => c.status === "fechado");
+  const pipe = contatos.filter(c => ["negociando", "followup"].includes(c.status)).length;
+  document.getElementById("rH").innerHTML =
+    '<div><div class="rec-item-label">Casos fechados</div><div class="rec-item-value">' + fech.length + '</div><div class="rec-item-sub">contratos</div></div>' +
+    '<div class="rec-divider"></div>' +
+    '<div><div class="rec-item-label">Receita estimada</div><div class="rec-item-value">' + fmt(fech.length * r.med * hon) + '</div><div class="rec-item-sub">' + r.hon + '% x ' + fmt(r.med) + '</div></div>' +
+    '<div class="rec-divider"></div>' +
+    '<div><div class="rec-item-label">Cenário otimista</div><div class="rec-item-value">' + fmt(fech.length * r.max * hon) + '</div><div class="rec-item-sub">' + r.hon + '% x ' + fmt(r.max) + '</div></div>' +
+    '<div class="rec-divider"></div>' +
+    '<div><div class="rec-item-label">Em pipeline</div><div class="rec-item-value">' + pipe + '</div><div class="rec-item-sub">negociando + follow up</div></div>';
+
+  const meses = [], recM = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(); d.setMonth(d.getMonth() - i);
+    meses.push(d.toLocaleDateString("pt-BR", { month: "short" }));
+    const m = d.getMonth(), y = d.getFullYear();
+    const n = fech.filter(c => { const cd = new Date(c.data); return cd.getMonth() === m && cd.getFullYear() === y; }).length;
+    recM.push(n * r.med * hon);
+  }
+  dCh("rm"); CH.rm = new Chart(document.getElementById("cRM"), { type: "bar", data: { labels: meses, datasets: [{ data: recM, backgroundColor: "rgba(184,150,46,0.2)", borderColor: "rgba(184,150,46,0.7)", borderWidth: 1.5, borderRadius: 5 }] }, options: { ...CO, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmt(c.raw) } } }, scales: { ...CO.scales, y: { ...CO.scales.y, ticks: { ...CO.scales.y.ticks, callback: v => fmt(v) } } } } });
+
+  const nR = fech.filter(c => c.caso === "rede").length;
+  const nB = fech.filter(c => c.caso === "banco").length;
+  const nO = fech.filter(c => c.caso === "onibus").length;
+  dCh("rn"); CH.rn = new Chart(document.getElementById("cRN"), { type: "doughnut", data: { labels: ["Redes sociais", "Conta bancária", "Ônibus"], datasets: [{ data: [nR * r.med * hon || 0, nB * r.med * hon || 0, nO * r.med * hon || 0], backgroundColor: ["rgba(74,58,154,0.5)", "rgba(184,150,46,0.5)", "rgba(196,92,0,0.5)"], borderWidth: 0 }] }, options: { ...DO, plugins: { ...DO.plugins, tooltip: { callbacks: { label: c => fmt(c.raw) } } } } });
+
+  const rt = document.getElementById("rT");
+  if (!fech.length) { rt.innerHTML = '<div class="empty">Nenhum caso fechado ainda.</div>'; return; }
+  rt.innerHTML = "<table><thead><tr><th>Nome</th><th>Caso</th><th>Data</th><th>Mínimo</th><th>Médio</th><th>Máximo</th></tr></thead><tbody>" +
+    fech.map(c =>
+      "<tr><td style='font-weight:600;color:var(--navy)'>" + c.nome + "</td><td>" + badgeCaso(c.caso) + "</td><td style='color:var(--text3);font-size:11px'>" + fmtD(c.data) + "</td><td style='color:var(--text3)'>" + fmt(r.min * hon) + "</td><td style='color:var(--gold);font-weight:700'>" + fmt(r.med * hon) + "</td><td style='color:var(--navy2)'>" + fmt(r.max * hon) + "</td></tr>"
+    ).join("") + "</tbody></table>";
+}
+
+// ─── RENDER PAGE ──────────────────────────────────────────────────────────────
+function rP(id) {
+  if (id === "dashboard") rDash();
+  else if (id === "contatos") rTab();
+  else if (id === "funil") rFunil();
+  else if (id === "receita") rReceita();
+}
+
+// ─── AUTO-REFRESH a cada 30s ──────────────────────────────────────────────────
+setInterval(() => { carregarLeads(); }, 30000);
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+carregarLeads();
 </script>
 </body>
 </html>
